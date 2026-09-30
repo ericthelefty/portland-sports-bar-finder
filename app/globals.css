@@ -118,6 +118,7 @@ ul.bars li { border-bottom: 1px solid var(--line); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.primary:hover { color: var(--accent-ink); filter: brightness(1.08); }
 .btn.danger { color: var(--red); }
+.btn:disabled, .btn[disabled] { opacity: 0.5; cursor: not-allowed; filter: none; }
 .section-title { font: 800 24px/1 var(--display); text-transform: uppercase; margin: 32px 0 10px; letter-spacing: 0.02em; }
 .pk-table { width: 100%; border-collapse: collapse; }
 .pk-table th, .pk-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
