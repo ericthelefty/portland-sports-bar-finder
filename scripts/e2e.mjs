@@ -58,7 +58,7 @@ try {
     }, null, { timeout: 30000 });
 
   // Report form: no email field, bot check shown, validation errors
-  await page.goto(`${BASE}/report`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/report`, { waitUntil: 'load' });
   check((await page.locator('#email, #optIn').count()) === 0, 'report form has no email or email-list fields');
   check((await page.locator('#captcha iframe, #captcha > *').count()) > 0, 'bot check widget is shown');
   await captchaReady();
@@ -69,7 +69,7 @@ try {
   await page.screenshot({ path: `${SHOTS}/report-errors.png`, fullPage: true });
 
   // A report without a valid bot-check pass is refused
-  await page.goto(`${BASE}/report?bar=51&has=nfl_redzone`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/report?bar=51&has=nfl_redzone`, { waitUntil: 'load' });
   await page.check('#rel-saw');
   await captchaReady();
   await page.evaluate(() => (document.querySelector('input[name=captchaToken]').value = ''));
@@ -80,7 +80,7 @@ try {
   check(noCaptchaRows === 0, 'the refused report is not stored');
 
   // Report 1: Kooks has NHL Center Ice
-  await page.goto(`${BASE}/report?bar=64&has=nhl_center_ice`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/report?bar=64&has=nhl_center_ice`, { waitUntil: 'load' });
   check(await page.isChecked('#has-nhl_center_ice'), 'report link pre-checks the package');
   await page.check('#rel-saw');
   await page.fill('#seenOn', '2026-09-20');
@@ -90,14 +90,14 @@ try {
   check(true, 'report 1 submitted');
 
   // Report 2: dispute Hop Haven's Sunday Ticket
-  await page.goto(`${BASE}/report?bar=46&dispute=nfl_sunday_ticket`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/report?bar=46&dispute=nfl_sunday_ticket`, { waitUntil: 'load' });
   check(await page.isChecked('#not-nfl_sunday_ticket'), '"Not right?" link pre-checks the doesn\'t-have box');
   await page.check('#rel-staff');
   await captchaReady();
   await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
 
   // Report 3: a bar that isn't listed
-  await page.goto(`${BASE}/report`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/report`, { waitUntil: 'load' });
   await page.selectOption('#barId', 'new');
   await page.fill('#newBarName', 'Test Taproom');
   await page.fill('#newBarAddress', '100 SE Test St, Portland, OR');
@@ -108,7 +108,7 @@ try {
   await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
 
   // Honeypot: a bot-filled report is silently dropped
-  await page.goto(`${BASE}/report?bar=3`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/report?bar=3`, { waitUntil: 'load' });
   await page.check('#has-nfl_redzone');
   await page.check('#rel-saw');
   await captchaReady();
@@ -240,7 +240,7 @@ try {
   const overflow = await pp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check(!overflow, 'no sideways scrolling on a phone');
   await pp.screenshot({ path: `${SHOTS}/phone-home-dark.png` });
-  await pp.goto(`${BASE}/report?bar=51`, { waitUntil: 'networkidle' });
+  await pp.goto(`${BASE}/report?bar=51`, { waitUntil: 'load' });
   await pp.screenshot({ path: `${SHOTS}/phone-report-dark.png`, fullPage: true });
   await pp.goto(`${BASE}/bars/78`, { waitUntil: 'networkidle' });
   await pp.screenshot({ path: `${SHOTS}/phone-bar-dark.png`, fullPage: true });
