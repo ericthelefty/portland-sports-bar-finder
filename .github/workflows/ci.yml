@@ -1,0 +1,28 @@
+name: ci
+on:
+  push:
+    branches-ignore: [ci-results]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe
+        run: |
+          set -o pipefail
+          { echo "sha=$GITHUB_SHA"; node -v; npm -v; npm view next version; } 2>&1 | tee ci.log
+      - name: Publish results
+        if: always()
+        run: |
+          mkdir -p /tmp/out && cp ci.log /tmp/out/ 2>/dev/null || echo "no log" > /tmp/out/ci.log
+          echo "status=${{ job.status }} sha=$GITHUB_SHA" > /tmp/out/STATUS
+          cd /tmp/out && git init -q && git checkout -q -b ci-results
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "ci results $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-results
