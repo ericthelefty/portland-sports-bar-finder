@@ -1,4 +1,6 @@
 name: ci
+# Builds the app and tests every flow against a real Postgres database on each push.
+# Results and screenshots are saved to the ci-results branch.
 on:
   push:
     branches-ignore: [ci-results]
@@ -6,23 +8,49 @@ on:
 permissions:
   contents: write
 jobs:
-  check:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      ADMIN_PASSWORD: ci-test-password-123
+      SITE_URL: http://localhost:3000
+      BASE_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Probe
+      - name: Install
         run: |
-          set -o pipefail
-          { echo "sha=$GITHUB_SHA"; node -v; npm -v; npm view next version; } 2>&1 | tee ci.log
+          mkdir -p out
+          echo "sha=$GITHUB_SHA" > out/summary.txt
+          npm install --no-audit --no-fund 2>&1 | tee out/install.log
+      - name: Build
+        run: npm run build 2>&1 | tee out/build.log
+      - name: Install browser
+        run: npx playwright install --with-deps chromium > out/playwright-install.log 2>&1
+      - name: Test
+        run: |
+          npm start > out/server.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/privacy && break; sleep 1; done
+          node scripts/e2e.mjs 2>&1 | tee out/e2e.log
       - name: Publish results
         if: always()
         run: |
-          mkdir -p /tmp/out && cp ci.log /tmp/out/ 2>/dev/null || echo "no log" > /tmp/out/ci.log
-          echo "status=${{ job.status }} sha=$GITHUB_SHA" > /tmp/out/STATUS
-          cd /tmp/out && git init -q && git checkout -q -b ci-results
+          echo "status=${{ job.status }}" >> out/summary.txt
+          cp package-lock.json out/ 2>/dev/null || true
+          mkdir -p /tmp/results && cp -r out/. /tmp/results/
+          cd /tmp/results && git init -q && git checkout -q -b ci-results
           git -c user.name=ci -c user.email=ci@users.noreply.github.com add -A
           git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "ci results $GITHUB_SHA"
           git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-results

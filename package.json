@@ -1,0 +1,25 @@
+{
+  "name": "portland-sports-bar-finder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Find Portland, Oregon sports bars by the TV packages they carry.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test:e2e": "node scripts/e2e.mjs"
+  },
+  "dependencies": {
+    "next": "16.3.7",
+    "postgres": "^3.4.5",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
