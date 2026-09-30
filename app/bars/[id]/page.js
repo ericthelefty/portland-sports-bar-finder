@@ -137,12 +137,6 @@ export default async function BarPage({ params }) {
         </Link>
       </p>
 
-      {bar.notes && (
-        <>
-          <h2 className="section-title">Notes</h2>
-          <p className="prose">{bar.notes}</p>
-        </>
-      )}
     </article>
   );
 }

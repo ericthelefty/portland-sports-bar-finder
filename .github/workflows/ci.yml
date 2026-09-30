@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p out
           echo "sha=$GITHUB_SHA" > out/summary.txt
-          npm install --no-audit --no-fund 2>&1 | tee out/install.log
+          npm ci --no-audit --no-fund 2>&1 | tee out/install.log
           node -e "const d=require('./node_modules/next/dist/compiled/@next/font/dist/google/font-data.json');console.log(Object.keys(d).filter(k=>/Shoulders/.test(k)).map(k=>k+' '+JSON.stringify(d[k].weights)).join('\n'))" > out/fonts.txt 2>&1 || true
       - name: Build
         run: npm run build 2>&1 | tee out/build.log

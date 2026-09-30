@@ -25,7 +25,7 @@ export default function Finder({ bars }) {
         if (area !== 'all' && b.area !== area) return false;
         if (onlyKnown && !b.packages.some((p) => p.status === 'has')) return false;
         if (!picked.every((k) => hasPkg(b, k))) return false;
-        if (q && !`${b.name} ${b.address} ${b.type} ${b.notes}`.toLowerCase().includes(q)) return false;
+        if (q && !`${b.name} ${b.address} ${b.type}`.toLowerCase().includes(q)) return false;
         return true;
       })
       .sort((x, y) => {

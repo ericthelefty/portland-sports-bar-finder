@@ -47,6 +47,7 @@ try {
   await page.screenshot({ path: `${SHOTS}/bar-page.png`, fullPage: true });
   const r404 = await page.goto(`${BASE}/bars/99999`);
   check(r404.status() === 404, 'unknown bar returns 404');
+  errors.length = 0; // the 404 above is expected
 
   // Report form: validation errors
   await page.goto(`${BASE}/report`, { waitUntil: 'networkidle' });

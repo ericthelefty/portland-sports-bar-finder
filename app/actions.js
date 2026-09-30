@@ -124,7 +124,8 @@ export async function approveReport(formData) {
     if (barId) {
       const source = r.relation === 'owner' ? 'owner' : 'fan';
       const evidence = [RELATIONS.find((x) => x.key === r.relation)?.label, r.link].filter(Boolean).join(' · ');
-      const confirmed = r.seen_on ?? r.created_at;
+      const confirmed =
+        r.seen_on ?? new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date(r.created_at));
       const upsert = (pkg, status) => tx`
         insert into bar_packages (bar_id, package, status, source, evidence, last_confirmed, updated_at)
         values (${barId}, ${pkg}, ${status}, ${source}, ${evidence}, ${confirmed}, now())
