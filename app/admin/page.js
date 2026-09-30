@@ -6,6 +6,7 @@ import { approveReport, rejectReport, adminLogout } from '@/app/actions';
 import { packageLabel, relationLabel, AREAS } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
 import LoginForm from './LoginForm';
+import AdminNav from './AdminNav';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Review reports', robots: { index: false, follow: false } };
@@ -44,6 +45,7 @@ export default async function AdminPage() {
   return (
     <>
       <h1 className="page-title">Review reports</h1>
+      <AdminNav current="reports" />
       <div className="admin-bar">
         <div className="stats">
           <div>

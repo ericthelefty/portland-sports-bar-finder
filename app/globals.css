@@ -161,6 +161,12 @@ details.more[open] summary { margin-bottom: 10px; }
 .prose h2 { font: 800 22px/1.1 var(--display); text-transform: uppercase; margin: 28px 0 6px; }
 
 /* Admin */
+.admin-tabs { display: flex; gap: 4px; margin-top: 16px; border-bottom: 1px solid var(--line); }
+.admin-tabs a { padding: 10px 14px; font-weight: 600; font-size: 14px; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.admin-tabs a:hover { color: var(--ink); }
+.admin-tabs a[aria-current='page'] { color: var(--ink); border-bottom-color: var(--accent); }
+.notice { margin-top: 16px; padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.danger-zone summary { color: var(--red); }
 .admin-bar { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; justify-content: space-between; margin-top: 16px; }
 .stats { display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; color: var(--muted); }
 .stats b { font: 800 26px/1 var(--display); color: var(--ink); display: block; }

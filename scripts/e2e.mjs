@@ -157,6 +157,70 @@ try {
   await page.goto(`${BASE}/bars/64`, { waitUntil: 'networkidle' });
   check((await page.textContent('#row-nhl_center_ice')).includes('Reported by a fan'), 'Kooks page credits the fan report');
 
+  // Manage bars: add, edit packages, hide, delete
+  await page.goto(`${BASE}/admin/bars`, { waitUntil: 'networkidle' });
+  check((await page.locator('#bar-table tbody tr').count()) === 83, 'Manage bars lists all 83 bars');
+  await page.fill('#bar-search', 'garden');
+  check((await page.locator('#bar-table tbody tr').count()) === 1, 'Manage bars search finds Garden Tavern');
+  await page.screenshot({ path: `${SHOTS}/manage-bars.png`, fullPage: true });
+
+  // Add a bar with NBA League Pass
+  await page.goto(`${BASE}/admin/bars/new`, { waitUntil: 'networkidle' });
+  await page.click('#save-bar');
+  await page.waitForSelector('.error');
+  check(true, 'adding a bar without a name shows an error');
+  await page.fill('#name', 'E2E Test Pub');
+  await page.fill('#type', 'Sports bar');
+  await page.selectOption('#area', 'NE');
+  await page.fill('#address', '1 NE Test Ave, Portland, OR');
+  await page.fill('#website', 'e2etestpub.example');
+  await page.check('#pkg_nba_league_pass_has');
+  await page.screenshot({ path: `${SHOTS}/add-bar.png`, fullPage: true });
+  await Promise.all([page.waitForURL('**/admin/bars?saved=**'), page.click('#save-bar')]);
+  const [added] = await sql`select id, website, area from bars where name = 'E2E Test Pub'`;
+  const [addedPkg] = added ? await sql`select status, source from bar_packages where bar_id = ${added.id}` : [];
+  check(added?.area === 'NE' && added?.website === 'https://e2etestpub.example', 'new bar saved with area and website');
+  check(addedPkg?.status === 'has' && addedPkg?.source === 'admin', 'new bar has NBA League Pass marked by the site');
+  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.click('#pk-nba_league_pass');
+  check((await page.locator('li.bar').count()) === 2, 'new bar appears in the NBA League Pass filter');
+
+  // Edit Garden Tavern: MLS -> unknown, NBA -> has, Sunday Ticket unchanged
+  await page.goto(`${BASE}/admin/bars/57`, { waitUntil: 'networkidle' });
+  check((await page.inputValue('#name')) === 'Garden Tavern', 'edit form loads Garden Tavern');
+  await page.check('#pkg_mls_season_pass_unknown');
+  await page.check('#pkg_nba_league_pass_has');
+  await Promise.all([page.waitForURL('**/admin/bars?saved=57'), page.click('#save-bar')]);
+  const gt = Object.fromEntries((await sql`select package, source from bar_packages where bar_id = 57`).map((r) => [r.package, r.source]));
+  check(!gt.mls_season_pass && gt.nba_league_pass === 'admin' && gt.nfl_sunday_ticket === 'bar_website',
+    'editing packages updates only what changed');
+  await page.goto(`${BASE}/bars/57`, { waitUntil: 'networkidle' });
+  check((await page.textContent('#row-nba_league_pass')).includes('Confirmed by the site'), 'bar page credits the site');
+
+  // Hide the test bar
+  await page.goto(`${BASE}/admin/bars/${added.id}`, { waitUntil: 'networkidle' });
+  await page.uncheck('#active');
+  await Promise.all([page.waitForURL('**/admin/bars?saved=**'), page.click('#save-bar')]);
+  const hidden = await page.request.get(`${BASE}/bars/${added.id}`);
+  check(hidden.status() === 404, 'a hidden bar is not shown on the site');
+  await page.goto(BASE, { waitUntil: 'networkidle' });
+  check((await page.locator('li.bar').count()) === 83, 'home lists 83 bars with the test bar hidden');
+
+  // Delete it
+  await page.goto(`${BASE}/admin/bars/${added.id}`, { waitUntil: 'networkidle' });
+  await page.click('.danger-zone summary');
+  await page.check('#confirm');
+  await Promise.all([page.waitForURL('**/admin/bars?deleted=1'), page.click('#delete-bar')]);
+  const gone = await sql`select id from bars where id = ${added.id}`;
+  check(gone.length === 0, 'deleting removes the bar');
+
+  // Admin pages are locked when signed out
+  const fresh = await browser.newContext();
+  const fp = await fresh.newPage();
+  await fp.goto(`${BASE}/admin/bars/57`, { waitUntil: 'networkidle' });
+  check((await fp.locator('#name').count()) === 0 && (await fp.locator('#password').count()) === 1, 'edit page asks for the password when signed out');
+  await fresh.close();
+
   // Phone-width and dark-mode screenshots
   const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
   const pp = await phone.newPage();
