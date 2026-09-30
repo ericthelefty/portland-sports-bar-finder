@@ -60,9 +60,9 @@ try {
   // Report form: no email field, bot check shown, validation errors
   await page.goto(`${BASE}/report`, { waitUntil: 'load' });
   check((await page.locator('#email, #optIn').count()) === 0, 'report form has no email or email-list fields');
-  check((await page.locator('#captcha iframe, #captcha > *').count()) > 0, 'bot check widget is shown');
   await captchaReady();
   check(true, 'bot check passes and enables the Send button');
+  check((await page.locator('#captcha > *').count()) > 0, 'bot check widget is shown');
   await page.click('#send-report');
   await page.waitForSelector('.error');
   check((await page.locator('.error').count()) >= 2, 'empty report shows field errors');
