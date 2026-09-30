@@ -57,6 +57,8 @@ jobs:
           echo "status=${{ job.status }}" >> out/summary.txt
           cp package-lock.json out/ 2>/dev/null || true
           mkdir -p /tmp/results && cp -r out/. /tmp/results/
+          # This branch holds test output, not the app, so tell Vercel not to build it.
+          echo '{"git":{"deploymentEnabled":false}}' > /tmp/results/vercel.json
           cd /tmp/results && git init -q && git checkout -q -b ci-results
           git -c user.name=ci -c user.email=ci@users.noreply.github.com add -A
           git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "ci results $GITHUB_SHA"
