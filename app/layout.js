@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { Big_Shoulders_Display, Public_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { Big_Shoulders, Public_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
-const display = Big_Shoulders_Display({ subsets: ['latin'], weight: ['600', '800'], variable: '--font-display' });
+const display = Big_Shoulders({ subsets: ['latin'], weight: ['600', '800'], variable: '--font-display' });
 const body = Public_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' });
 
