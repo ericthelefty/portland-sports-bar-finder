@@ -1,0 +1,57 @@
+PASS  home lists 82 bars
+PASS  Sunday Ticket filter shows 6 bars
+PASS  Sunday Ticket + League Pass shows 1 bar
+PASS  SE filter narrows the list (24)
+PASS  search finds Kooks
+PASS  bar page shows Garden Tavern
+PASS  Garden Tavern lists Sunday Ticket
+PASS  unknown bar returns 404
+PASS  report form has no email or email-list fields
+PASS  bot check passes and enables the Send button
+PASS  bot check widget is shown
+PASS  empty report shows field errors
+PASS  a report without the bot check is refused
+PASS  the refused report is not stored
+PASS  report link pre-checks the package
+PASS  report link fills in the bar
+PASS  report 1 submitted
+PASS  "Not right?" link pre-checks the doesn't-have box
+PASS  typing "spirit" narrows the list to Spirit of 77 plus "not listed"
+PASS  pressing Enter picks the highlighted bar
+PASS  the list closes after picking
+PASS  search ignores apostrophes and capitals
+PASS  typing again clears the earlier choice
+PASS  no-match message appears
+PASS  with no match, the add option uses what was typed
+PASS  pressing Enter with no match picks "add a new bar"
+PASS  the new bar name is filled in from the search
+PASS  honeypot report is not stored
+PASS  no email addresses are stored
+PASS  the old email-list download is gone
+PASS  admin shows no reports before sign-in
+PASS  wrong password is refused
+PASS  admin shows 3 pending reports
+PASS  admin does not warn about the bot check when it is on
+PASS  approving adds NHL Center Ice to Kooks as a fan report
+PASS  approving a new-bar report adds the bar with its package
+PASS  rejecting a dispute leaves the listing unchanged
+PASS  queue is empty after review
+PASS  NHL Center Ice filter now shows 2 bars
+PASS  Kooks page credits the fan report
+PASS  Manage bars lists all 83 bars
+PASS  Manage bars search finds Garden Tavern
+PASS  adding a bar without a name shows an error
+PASS  new bar saved with area and website
+PASS  new bar has NBA League Pass marked by the site
+PASS  new bar appears in the NBA League Pass filter
+PASS  edit form loads Garden Tavern
+PASS  editing packages updates only what changed
+PASS  bar page credits the site
+PASS  a hidden bar is not shown on the site
+PASS  home lists 83 bars with the test bar hidden
+PASS  deleting removes the bar
+PASS  edit page asks for the password when signed out
+PASS  no sideways scrolling on a phone
+PASS  no browser errors
+
+All checks passed
