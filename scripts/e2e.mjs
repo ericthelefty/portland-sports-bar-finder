@@ -82,6 +82,7 @@ try {
   // Report 1: Kooks has NHL Center Ice
   await page.goto(`${BASE}/report?bar=64&has=nhl_center_ice`, { waitUntil: 'load' });
   check(await page.isChecked('#has-nhl_center_ice'), 'report link pre-checks the package');
+  check((await page.inputValue('#barSearch')) === 'Kooks (N)', 'report link fills in the bar');
   await page.check('#rel-saw');
   await page.fill('#seenOn', '2026-09-20');
   await captchaReady();
@@ -98,7 +99,24 @@ try {
 
   // Report 3: a bar that isn't listed
   await page.goto(`${BASE}/report`, { waitUntil: 'load' });
-  await page.selectOption('#barId', 'new');
+  // Bar search: type part of a name, pick from the narrowed list
+  await page.fill('#barSearch', 'spirit');
+  check((await page.locator('.picker-list [data-option]').count()) === 2, 'typing "spirit" narrows the list to Spirit of 77 plus "not listed"');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('Enter');
+  check((await page.inputValue('input[name=barId]')) === '51', 'pressing Enter picks the highlighted bar');
+  check((await page.locator('.picker-list').count()) === 0, 'the list closes after picking');
+  await page.fill('#barSearch', 'kells');
+  check((await page.locator(".picker-list [data-option='5']").count()) === 1, 'search ignores apostrophes and capitals');
+  check((await page.inputValue('input[name=barId]')) === '', 'typing again clears the earlier choice');
+  await page.fill('#barSearch', 'Joes Pub');
+  check((await page.locator('.picker-empty').count()) === 1, 'no-match message appears');
+  check((await page.textContent(".picker-list [data-option='new']")).includes('Add "Joes Pub" as a new bar'), 'with no match, the add option uses what was typed');
+  await page.screenshot({ path: `${SHOTS}/bar-search-empty.png`, fullPage: true });
+  await page.keyboard.press('Enter');
+  check((await page.inputValue('input[name=barId]')) === 'new', 'pressing Enter with no match picks "add a new bar"');
+  check((await page.inputValue('#newBarName')) === 'Joes Pub', 'the new bar name is filled in from the search');
   await page.fill('#newBarName', 'Test Taproom');
   await page.fill('#newBarAddress', '100 SE Test St, Portland, OR');
   await page.selectOption('#newBarArea', 'SE');

@@ -160,6 +160,15 @@ details.more[open] summary { margin-bottom: 10px; }
 .prose { max-width: 68ch; }
 .prose h2 { font: 800 22px/1.1 var(--display); text-transform: uppercase; margin: 28px 0 6px; }
 
+/* Bar picker on the report form */
+.picker { position: relative; }
+.picker-list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; max-height: 300px; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.14); }
+.picker-list li { padding: 9px 10px; border-radius: 6px; cursor: pointer; font-size: 14.5px; }
+.picker-list li.active { background: var(--accent-soft); }
+.picker-list li[aria-selected='true'] { font-weight: 700; }
+.picker-list li.picker-new { border-top: 1px solid var(--line); margin-top: 4px; color: var(--accent); font-weight: 600; }
+.picker-list li.picker-empty { cursor: default; color: var(--muted); font-size: 13px; }
+
 /* Admin */
 .admin-tabs { display: flex; gap: 4px; margin-top: 16px; border-bottom: 1px solid var(--line); }
 .admin-tabs a { padding: 10px 14px; font-weight: 600; font-size: 14px; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }

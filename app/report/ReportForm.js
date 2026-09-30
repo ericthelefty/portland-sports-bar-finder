@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
 import { submitReport } from '@/app/actions';
+import BarPicker from './BarPicker';
 import { PACKAGES, RELATIONS, AREAS } from '@/lib/constants';
 
 function Err({ msg, id }) {
@@ -58,6 +59,7 @@ export default function ReportForm({ bars, initial, captchaSiteKey }) {
   const v = state?.values ?? {};
   const e = state?.errors ?? {};
   const [barId, setBarId] = useState(v.barId ?? initial.barId ?? '');
+  const [newBarName, setNewBarName] = useState(v.newBarName ?? '');
   const has = v.has ?? initial.has;
   const not = v.not ?? initial.not;
   const today = new Date().toISOString().slice(0, 10);
@@ -67,26 +69,24 @@ export default function ReportForm({ bars, initial, captchaSiteKey }) {
       {e.form && <p className="form-error">{e.form}</p>}
 
       <fieldset>
-        <label className="field-label" htmlFor="barId">
+        <label className="field-label" htmlFor="barSearch">
           Which bar?
         </label>
-        <select id="barId" name="barId" value={barId} onChange={(ev) => setBarId(ev.target.value)} required>
-          <option value="">Choose a bar…</option>
-          {bars.map((b) => (
-            <option key={b.id} value={String(b.id)}>
-              {b.name}
-              {b.area ? ` (${b.area})` : ''}
-            </option>
-          ))}
-          <option value="new">My bar isn't listed</option>
-        </select>
+        <BarPicker bars={bars} value={barId} onChange={setBarId} onAddNew={setNewBarName} invalid={Boolean(e.barId)} />
         <Err msg={e.barId} />
         {barId === 'new' && (
           <div style={{ display: 'grid', gap: 10, marginTop: 6 }}>
             <label className="field-label" htmlFor="newBarName">
               Bar name
             </label>
-            <input id="newBarName" name="newBarName" type="text" defaultValue={v.newBarName} autoComplete="off" />
+            <input
+              id="newBarName"
+              name="newBarName"
+              type="text"
+              value={newBarName}
+              onChange={(ev) => setNewBarName(ev.target.value)}
+              autoComplete="off"
+            />
             <Err msg={e.newBarName} />
             <label className="field-label" htmlFor="newBarAddress">
               Street address
