@@ -1,10 +1,10 @@
 # Putting the site online
 
-This takes about 20 minutes and needs no coding. You'll create two free accounts, copy two values between them, and click Deploy. Confirmation emails and a custom web address are optional extras at the end.
+This takes about 30 minutes and needs no coding. You'll create three free accounts (Supabase, Vercel and Cloudflare), copy a few values between them, and click Deploy. A custom web address is an optional extra at the end.
 
 **What you'll end up with**
 
-- A public site anyone can use to find bars and report TV packages
+- A public site anyone can use to find bars and report TV packages, with a bot check on the report form
 - A private review page at `/admin` that only opens with your password
 - A database you can open and edit like a spreadsheet
 
@@ -50,10 +50,34 @@ You don't need to create any tables. The site does that itself the first time it
 
 ---
 
+## Step 3: Turn on the bot check (Cloudflare Turnstile)
+
+This adds a "Verify you are human" check to the report form. Most people pass it without clicking anything.
+
+1. Go to [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up) and create a free account. You don't need to move your domain to Cloudflare.
+2. In the Cloudflare dashboard, open **Turnstile** in the left menu and click **Add widget**.
+3. Fill in:
+   - **Widget name:** `Sports bar finder`
+   - **Hostnames:** add your site's address without `https://`, for example `portland-sports-bar-finder.vercel.app`. If you add your own domain later, add it here too.
+   - **Widget mode:** **Managed**
+4. Click **Create**. Cloudflare shows a **Site key** and a **Secret key**.
+5. In Vercel, open your project and go to **Settings → Environment Variables**. Add both:
+
+   | Name | Value |
+   |---|---|
+   | `TURNSTILE_SITE_KEY` | The Site key |
+   | `TURNSTILE_SECRET_KEY` | The Secret key |
+
+6. Go to **Deployments**, click **⋯** on the latest one and choose **Redeploy**.
+7. Open `/report` on your site. You should see the check above the **Send report** button.
+
+Until both keys are set, the form works without the check, and your review page shows a reminder.
+
+---
+
 ## Using the site
 
 - **Reviewing reports:** open `/admin`. Each report shows what the bar is listed with now next to what the report says. **Approve** updates the listing (or adds the bar if it's new), and **Reject** discards the report. Reports that would remove a package are marked **Disputes**.
-- **Email list:** on `/admin`, click **Download email list (CSV)**. It includes only people who checked the opt-in box, with the date and exact wording they agreed to. Import it into Buttondown, Mailchimp or a similar service to send emails; they handle unsubscribes for you.
 - **Editing a bar yourself:** in Supabase, open **Table Editor**:
   - **`bars`** holds names, addresses, areas and links. To hide a bar, set `active` to `false`.
   - **`bar_packages`** holds one row per bar and package. `status` is `has` or `not`, and `source` is `bar_website`, `owner`, `fan` or `admin`.
@@ -61,46 +85,28 @@ You don't need to create any tables. The site does that itself the first time it
 
 ---
 
-## Optional: confirmation emails (Resend)
-
-Without this, reports still arrive, but marked **Email not confirmed**. With it, each person gets a link to click before their report counts as confirmed. You need your own domain first (see the next section), because Resend only sends to the public from a domain you own.
-
-1. Sign up at [resend.com](https://resend.com).
-2. Go to **Domains → Add Domain** and enter your domain. Resend shows a few DNS records. Add them where you bought the domain (or in Vercel, if you bought it there), then click **Verify**.
-3. Go to **API Keys → Create API Key** and copy the key.
-4. In Vercel, open your project and go to **Settings → Environment Variables**. Add:
-
-   | Name | Value |
-   |---|---|
-   | `RESEND_API_KEY` | The key from step 3 |
-   | `EMAIL_FROM` | For example `PDX Game Finder <reports@yourdomain.com>` (it must use your verified domain) |
-   | `SITE_URL` | Your site's address, for example `https://yourdomain.com` |
-
-5. Go to **Deployments**, open the menu (**⋯**) on the latest one and choose **Redeploy**.
-
----
-
 ## Optional: your own web address
 
 1. In Vercel, open your project and go to **Settings → Domains**.
 2. Buy a domain there, or add one you already own and follow the DNS instructions Vercel shows.
-3. If you set up Resend, update `SITE_URL` to the new address and redeploy.
+3. In Cloudflare, open your Turnstile widget and add the new domain to its **Hostnames**.
 
 ## Optional: a contact email on the privacy page
 
-Add an environment variable `CONTACT_EMAIL` with the address people should write to about removing their information, then redeploy.
+Add an environment variable `CONTACT_EMAIL` with the address people can write to with questions, then redeploy.
 
 ---
 
 ## Good to know
 
 - **Free plan limits:** Vercel's Hobby plan is for non-commercial projects. If you add ads or charge bars, move to Vercel's paid plan. Supabase pauses free projects after about a week with no activity. A site with regular visitors stays awake, and you can resume a paused project from the Supabase dashboard.
-- **Privacy:** the database only accepts connections through the site. Supabase's built-in public API is locked (row-level security is on), so report emails aren't exposed.
-- **Spam:** the form has a hidden trap field that bots fill in, and it allows at most six reports per hour from one internet connection.
+- **Privacy:** the report form doesn't ask for names or email addresses. The database only accepts connections through the site, and Supabase's built-in public API is locked (row-level security is on).
+- **Spam:** besides the Cloudflare check, the form has a hidden trap field that bots fill in, and it allows at most six reports per hour from one internet connection.
 - **Changing your admin password:** update `ADMIN_PASSWORD` in Vercel and redeploy. Anyone signed in is signed out.
 
 ## If something goes wrong
 
 - **The site shows "Application error" or bars don't load:** `DATABASE_URL` is usually the culprit. Check that you replaced `[YOUR-PASSWORD]` completely (no brackets left), that you used the **Transaction pooler** string, and that the password has no symbols. Fix it in **Settings → Environment Variables**, then redeploy.
 - **The review page says it's locked:** `ADMIN_PASSWORD` is missing or shorter than 8 characters.
+- **The bot check doesn't appear, or says the site isn't allowed:** check that both Turnstile keys are in Vercel (no spaces), that your site's address is in the widget's **Hostnames** in Cloudflare, and that you redeployed after adding the keys.
 - **You can see the error details** in Vercel under your project → **Logs**. Copy what you see there to Claude.

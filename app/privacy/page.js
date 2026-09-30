@@ -9,33 +9,38 @@ export default function Privacy() {
 
       <h2>What we collect</h2>
       <p>
-        When you send a report, we store what you entered (the bar, the packages, how you know, the date and any link or
-        note), your email address, and a scrambled version of your IP address that we use only to block spam.
+        When you send a report, we store what you entered: the bar, the packages, how you know, and any date, link or note.
+        We don't ask for your name or email address.
+      </p>
+      <p>
+        We also store a scrambled version of your IP address. We can't turn it back into your address. We use it only to
+        limit how many reports one connection can send, to block spam.
       </p>
 
-      <h2>How we use your email</h2>
+      <h2>Bot check</h2>
       <p>
-        We use it to confirm the report came from a real person and, if needed, to ask about your report. We never show
-        it on the site or sell it.
+        The report form uses Cloudflare Turnstile to check that a person, not a bot, is sending it. Cloudflare may process
+        technical information from your browser to run this check, as described in{' '}
+        <a href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">
+          Cloudflare's Turnstile privacy addendum
+        </a>
+        .
       </p>
 
-      <h2>Email updates</h2>
+      <h2>What we publish</h2>
       <p>
-        We only add you to our email list if you check the box on the form. We keep a record of when you signed up and
-        the wording you agreed to. Every email we send includes a way to unsubscribe.
+        If we approve your report, the site shows the package and that it was reported by a fan (or confirmed by the bar, if
+        you said you work there), with the date. We never publish your note or link.
       </p>
 
-      <h2>Removing your information</h2>
-      <p>
-        To have your reports or email address removed,{' '}
-        {contact ? (
-          <>
-            email <span className="mono">{contact}</span>.
-          </>
-        ) : (
-          'contact the site owner.'
-        )}
-      </p>
+      {contact && (
+        <>
+          <h2>Questions</h2>
+          <p>
+            Email <span className="mono">{contact}</span>.
+          </p>
+        </>
+      )}
     </div>
   );
 }

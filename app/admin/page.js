@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { isAdmin, adminConfigured } from '@/lib/auth';
 import { getPendingReports, getRecentReviewed, getCounts } from '@/lib/data';
-import { emailConfigured } from '@/lib/email';
+import { captchaEnabled } from '@/lib/captcha';
 import { approveReport, rejectReport, adminLogout } from '@/app/actions';
 import { packageLabel, relationLabel, AREAS } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
@@ -40,7 +40,7 @@ export default async function AdminPage() {
   }
 
   const [pending, recent, counts] = await Promise.all([getPendingReports(), getRecentReviewed(), getCounts()]);
-  const sendsEmail = emailConfigured();
+  const hasCaptcha = captchaEnabled();
 
   return (
     <>
@@ -52,13 +52,10 @@ export default async function AdminPage() {
             <b id="pending-count">{counts.pending}</b>waiting for review
           </div>
           <div>
-            <b>{counts.subscribers}</b>email-list signups ({counts.verified_subscribers} confirmed)
+            <b>{counts.approved}</b>approved so far
           </div>
         </div>
         <div className="actions">
-          <a className="btn" href="/admin/subscribers.csv">
-            Download email list (CSV)
-          </a>
           <form action={adminLogout}>
             <button className="btn" type="submit">
               Sign out
@@ -66,10 +63,10 @@ export default async function AdminPage() {
           </form>
         </div>
       </div>
-      {!sendsEmail && (
-        <p className="note">
-          Confirmation emails are off because Resend isn't set up yet, so reports arrive with unconfirmed emails. See the
-          setup guide to turn them on.
+      {!hasCaptcha && (
+        <p className="note" id="captcha-off">
+          The bot check on the report form is off because the Cloudflare Turnstile keys aren't set. See "Turn on the bot
+          check" in SETUP.md.
         </p>
       )}
 
@@ -96,9 +93,6 @@ export default async function AdminPage() {
                     Disputes {packageLabel(k)}
                   </span>
                 ))}
-                <span className={`flag ${r.emailVerified ? 'ok' : 'plain'}`}>
-                  {r.emailVerified ? 'Email confirmed' : 'Email not confirmed'}
-                </span>
               </div>
             </div>
             {!r.barId && (
@@ -133,8 +127,7 @@ export default async function AdminPage() {
             )}
             <div className="small">
               {relationLabel(r.relation)}
-              {r.seenOn ? ` · seen ${formatDate(r.seenOn)}` : ''} · sent {formatDate(r.createdAt)} · {r.email}
-              {r.optIn ? ' · joined email list' : ''}
+              {r.seenOn ? ` · seen ${formatDate(r.seenOn)}` : ''} · sent {formatDate(r.createdAt)}
             </div>
             {r.otherPackage && (
               <div className="small">

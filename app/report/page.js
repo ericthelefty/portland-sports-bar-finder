@@ -1,6 +1,7 @@
 import { getBarOptions } from '@/lib/data';
 import { PACKAGE_KEYS } from '@/lib/constants';
 import ReportForm from './ReportForm';
+import { captchaSiteKey } from '@/lib/captcha';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Report a TV package' };
@@ -21,6 +22,7 @@ export default async function ReportPage({ searchParams }) {
       <ReportForm
         bars={bars.map((b) => ({ id: b.id, name: b.name, area: b.area }))}
         initial={{ barId, has: pick(sp?.has), not: pick(sp?.dispute) }}
+        captchaSiteKey={captchaSiteKey()}
       />
     </>
   );

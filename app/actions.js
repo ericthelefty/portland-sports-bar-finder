@@ -1,36 +1,35 @@
 'use server';
 
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { sql, ensureDb } from '@/lib/db';
-import { PACKAGE_KEYS, RELATIONS, AREAS, CONSENT_TEXT } from '@/lib/constants';
-import { sendConfirmationEmail } from '@/lib/email';
+import { PACKAGE_KEYS, RELATIONS, AREAS } from '@/lib/constants';
+import { verifyCaptcha } from '@/lib/captcha';
 import { isAdmin, passwordMatches, startSession, endSession } from '@/lib/auth';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MAX_REPORTS_PER_HOUR = 6;
 
 const clean = (v, max = 500) => String(v ?? '').trim().slice(0, max);
 
-async function ipHash() {
+async function visitorIp() {
   const h = await headers();
-  const ip = (h.get('x-forwarded-for') || h.get('x-real-ip') || 'unknown').split(',')[0].trim();
-  return createHash('sha256').update(`pdx-bars:${ip}`).digest('hex').slice(0, 32);
+  return (h.get('x-forwarded-for') || h.get('x-real-ip') || 'unknown').split(',')[0].trim();
 }
+
+const hashIp = (ip) => createHash('sha256').update(`pdx-bars:${ip}`).digest('hex').slice(0, 32);
 
 // Handles the public "Report a TV package" form.
 export async function submitReport(_prev, formData) {
   const values = Object.fromEntries(
-    ['barId', 'newBarName', 'newBarAddress', 'newBarArea', 'relation', 'seenOn', 'link', 'note', 'email', 'otherPackage'].map(
+    ['barId', 'newBarName', 'newBarAddress', 'newBarArea', 'relation', 'seenOn', 'link', 'note', 'otherPackage'].map(
       (k) => [k, clean(formData.get(k), k === 'note' ? 1000 : 300)]
     )
   );
   const has = formData.getAll('has').filter((k) => PACKAGE_KEYS.includes(k));
   const not = formData.getAll('not').filter((k) => PACKAGE_KEYS.includes(k) && !has.includes(k));
-  const optIn = formData.get('optIn') === 'yes';
-  const state = { values: { ...values, has, not, optIn } };
+  const state = { values: { ...values, has, not } };
 
   // Bots fill in every field, including this hidden one.
   if (clean(formData.get('website_url'))) redirect('/report/thanks');
@@ -48,41 +47,31 @@ export async function submitReport(_prev, formData) {
   if (values.seenOn && !/^\d{4}-\d{2}-\d{2}$/.test(values.seenOn)) errors.seenOn = 'Enter a valid date.';
   if (values.seenOn && new Date(values.seenOn) > new Date(Date.now() + 86400000)) errors.seenOn = "The date can't be in the future.";
   if (values.link && !/^https?:\/\//i.test(values.link)) errors.link = 'Links need to start with http:// or https://';
-  if (!EMAIL_RE.test(values.email)) errors.email = 'Enter a valid email address, like name@example.com.';
   if (Object.keys(errors).length) return { ...state, errors };
 
+  const ip = await visitorIp();
+  if (!(await verifyCaptcha(clean(formData.get('captchaToken'), 2048), ip)))
+    return { ...state, errors: { captcha: 'Complete the "Verify you are human" check, then send again.' } };
+
   await ensureDb();
-  let barName = '';
   if (!addingBar) {
-    const [bar] = await sql`select name from bars where id = ${barId} and active`;
+    const [bar] = await sql`select id from bars where id = ${barId} and active`;
     if (!bar) return { ...state, errors: { barId: "We couldn't find that bar. Choose it again from the list." } };
-    barName = bar.name;
   }
 
-  const ip = await ipHash();
+  const ipHash = hashIp(ip);
   const [{ recent }] = await sql`
-    select count(*)::int as recent from reports where ip_hash = ${ip} and created_at > now() - interval '1 hour'`;
+    select count(*)::int as recent from reports where ip_hash = ${ipHash} and created_at > now() - interval '1 hour'`;
   if (recent >= MAX_REPORTS_PER_HOUR)
     return { ...state, errors: { form: "You've sent several reports in the last hour. Try again later." } };
 
-  const token = randomBytes(24).toString('base64url');
-  const email = values.email.toLowerCase();
   await sql`
     insert into reports (bar_id, new_bar_name, new_bar_address, new_bar_area, has_packages, not_packages, other_package,
-                         relation, seen_on, link, note, email, verify_token, opt_in, ip_hash)
+                         relation, seen_on, link, note, email, ip_hash)
     values (${barId}, ${addingBar ? values.newBarName : ''}, ${addingBar ? values.newBarAddress : ''},
             ${addingBar ? values.newBarArea : ''}, ${has.join(',')}, ${not.join(',')}, ${values.otherPackage},
-            ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, ${email}, ${token},
-            ${optIn}, ${ip})`;
-  if (optIn) {
-    await sql`
-      insert into subscribers (email, consent_text, source)
-      values (${email}, ${CONSENT_TEXT}, 'report form')
-      on conflict (email) do nothing`;
-  }
-
-  const sent = await sendConfirmationEmail({ to: email, token, barName: barName || values.newBarName });
-  redirect(sent ? '/report/thanks?check=email' : '/report/thanks');
+            ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, '', ${ipHash})`;
+  redirect('/report/thanks');
 }
 
 export async function adminLogin(_prev, formData) {

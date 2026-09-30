@@ -20,7 +20,8 @@ const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } })
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
-page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+// Messages from Cloudflare's bot-check frame are its own and not the site's.
+page.on('console', (m) => m.type() === 'error' && !(m.location()?.url || '').includes('challenges.cloudflare.com') && errors.push(m.text()));
 
 try {
   // Finder
@@ -49,30 +50,51 @@ try {
   check(r404.status() === 404, 'unknown bar returns 404');
   errors.length = 0; // the 404 above is expected
 
-  // Report form: validation errors
+  // The report form waits for the bot check to pass before it can be sent.
+  const captchaReady = () =>
+    page.waitForFunction(() => {
+      const b = document.getElementById('send-report');
+      return b && !b.disabled;
+    }, null, { timeout: 30000 });
+
+  // Report form: no email field, bot check shown, validation errors
   await page.goto(`${BASE}/report`, { waitUntil: 'networkidle' });
-  await page.click('button[type=submit]');
+  check((await page.locator('#email, #optIn').count()) === 0, 'report form has no email or email-list fields');
+  check((await page.locator('#captcha iframe, #captcha > *').count()) > 0, 'bot check widget is shown');
+  await captchaReady();
+  check(true, 'bot check passes and enables the Send button');
+  await page.click('#send-report');
   await page.waitForSelector('.error');
-  check((await page.locator('.error').count()) >= 3, 'empty report shows field errors');
+  check((await page.locator('.error').count()) >= 2, 'empty report shows field errors');
   await page.screenshot({ path: `${SHOTS}/report-errors.png`, fullPage: true });
 
-  // Report 1: Kooks has NHL Center Ice, with email-list opt-in
+  // A report without a valid bot-check pass is refused
+  await page.goto(`${BASE}/report?bar=51&has=nfl_redzone`, { waitUntil: 'networkidle' });
+  await page.check('#rel-saw');
+  await captchaReady();
+  await page.evaluate(() => (document.querySelector('input[name=captchaToken]').value = ''));
+  await page.click('#send-report');
+  await page.waitForSelector('.error');
+  check((await page.textContent('form.report')).includes('Verify you are human'), 'a report without the bot check is refused');
+  const [{ n: noCaptchaRows }] = await sql`select count(*)::int as n from reports where bar_id = 51`;
+  check(noCaptchaRows === 0, 'the refused report is not stored');
+
+  // Report 1: Kooks has NHL Center Ice
   await page.goto(`${BASE}/report?bar=64&has=nhl_center_ice`, { waitUntil: 'networkidle' });
   check(await page.isChecked('#has-nhl_center_ice'), 'report link pre-checks the package');
   await page.check('#rel-saw');
   await page.fill('#seenOn', '2026-09-20');
-  await page.fill('#email', 'fan1@example.com');
-  await page.check('#optIn');
+  await captchaReady();
   await page.screenshot({ path: `${SHOTS}/report-filled.png`, fullPage: true });
-  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('button[type=submit]')]);
+  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
   check(true, 'report 1 submitted');
 
   // Report 2: dispute Hop Haven's Sunday Ticket
   await page.goto(`${BASE}/report?bar=46&dispute=nfl_sunday_ticket`, { waitUntil: 'networkidle' });
   check(await page.isChecked('#not-nfl_sunday_ticket'), '"Not right?" link pre-checks the doesn\'t-have box');
   await page.check('#rel-staff');
-  await page.fill('#email', 'fan2@example.com');
-  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('button[type=submit]')]);
+  await captchaReady();
+  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
 
   // Report 3: a bar that isn't listed
   await page.goto(`${BASE}/report`, { waitUntil: 'networkidle' });
@@ -82,32 +104,24 @@ try {
   await page.selectOption('#newBarArea', 'SE');
   await page.check('#has-mlb_extra_innings');
   await page.check('#rel-owner');
-  await page.fill('#email', 'owner@example.com');
-  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('button[type=submit]')]);
+  await captchaReady();
+  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
 
   // Honeypot: a bot-filled report is silently dropped
   await page.goto(`${BASE}/report?bar=3`, { waitUntil: 'networkidle' });
   await page.check('#has-nfl_redzone');
   await page.check('#rel-saw');
-  await page.fill('#email', 'bot@example.com');
+  await captchaReady();
   await page.evaluate(() => (document.getElementById('website_url').value = 'spam'));
-  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('button[type=submit]')]);
-  const [{ n: botRows }] = await sql`select count(*)::int as n from reports where email = 'bot@example.com'`;
+  await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
+  const [{ n: botRows }] = await sql`select count(*)::int as n from reports where bar_id = 3`;
   check(botRows === 0, 'honeypot report is not stored');
-
-  // Email confirmation link
-  const [{ verify_token: token }] = await sql`select verify_token from reports where email = 'fan1@example.com'`;
-  await page.goto(`${BASE}/confirm?token=${token}`, { waitUntil: 'networkidle' });
-  check(page.url().endsWith('/confirmed'), 'confirmation link lands on /confirmed');
-  const [{ email_verified }] = await sql`select email_verified from reports where email = 'fan1@example.com'`;
-  const [{ verified }] = await sql`select verified from subscribers where email = 'fan1@example.com'`;
-  check(email_verified && verified, 'confirming marks the report and the signup as confirmed');
-  await page.goto(`${BASE}/confirm?token=${token}`, { waitUntil: 'networkidle' });
-  check(page.url().includes('invalid=1'), 'a used link is rejected');
+  const [{ n: emails }] = await sql`select count(*)::int as n from reports where email <> ''`;
+  check(emails === 0, 'no email addresses are stored');
 
   // Admin: locked without the password
-  const csvLocked = await page.request.get(`${BASE}/admin/subscribers.csv`);
-  check(csvLocked.status() === 401, 'email list download is locked when signed out');
+  const oldCsv = await page.request.get(`${BASE}/admin/subscribers.csv`);
+  check(oldCsv.status() === 404, 'the old email-list download is gone');
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
   check((await page.locator('.report-card').count()) === 0, 'admin shows no reports before sign-in');
   await page.fill('#password', 'wrong-password');
@@ -117,20 +131,22 @@ try {
   await page.fill('#password', process.env.ADMIN_PASSWORD);
   await Promise.all([page.waitForSelector('.report-card'), page.click('button[type=submit]')]);
   check((await page.locator('.report-card').count()) === 3, 'admin shows 3 pending reports');
+  check((await page.locator('#captcha-off').count()) === 0, 'admin does not warn about the bot check when it is on');
   await page.screenshot({ path: `${SHOTS}/admin-queue.png`, fullPage: true });
 
-  const ids = await sql`select id, email from reports order by id`;
-  const idOf = (email) => ids.find((r) => r.email === email).id;
+  const ids = await sql`select id, bar_id, new_bar_name from reports order by id`;
+  const idOfBar = (barId) => ids.find((r) => r.bar_id === barId).id;
+  const idOfNew = (name) => ids.find((r) => r.new_bar_name === name).id;
 
   // Approve report 1 -> Kooks gains NHL Center Ice as a fan report
-  await Promise.all([page.waitForResponse((r) => r.request().method() === 'POST'), page.click(`#approve-${idOf('fan1@example.com')}`)]);
+  await Promise.all([page.waitForResponse((r) => r.request().method() === 'POST'), page.click(`#approve-${idOfBar(64)}`)]);
   await page.waitForTimeout(800);
   const [kooks] = await sql`select status, source from bar_packages where bar_id = 64 and package = 'nhl_center_ice'`;
   check(kooks?.status === 'has' && kooks?.source === 'fan', 'approving adds NHL Center Ice to Kooks as a fan report');
 
   // Approve report 3 -> new bar is created
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-  await Promise.all([page.waitForResponse((r) => r.request().method() === 'POST'), page.click(`#approve-${idOf('owner@example.com')}`)]);
+  await Promise.all([page.waitForResponse((r) => r.request().method() === 'POST'), page.click(`#approve-${idOfNew('Test Taproom')}`)]);
   await page.waitForTimeout(800);
   const [newBar] = await sql`select id, area from bars where name = 'Test Taproom'`;
   const [newPkg] = newBar ? await sql`select source from bar_packages where bar_id = ${newBar.id}` : [];
@@ -138,17 +154,13 @@ try {
 
   // Reject report 2 -> Hop Haven keeps Sunday Ticket
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-  await Promise.all([page.waitForResponse((r) => r.request().method() === 'POST'), page.click(`#reject-${idOf('fan2@example.com')}`)]);
+  await Promise.all([page.waitForResponse((r) => r.request().method() === 'POST'), page.click(`#reject-${idOfBar(46)}`)]);
   await page.waitForTimeout(800);
   const [hop] = await sql`select status from bar_packages where bar_id = 46 and package = 'nfl_sunday_ticket'`;
   check(hop?.status === 'has', 'rejecting a dispute leaves the listing unchanged');
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
   check((await page.locator('.report-card').count()) === 0, 'queue is empty after review');
   await page.screenshot({ path: `${SHOTS}/admin-reviewed.png`, fullPage: true });
-
-  const csv = await page.request.get(`${BASE}/admin/subscribers.csv`);
-  const csvText = await csv.text();
-  check(csv.status() === 200 && csvText.includes('fan1@example.com') && !csvText.includes('fan2@example.com'), 'email list CSV has only opted-in people');
 
   // Updated listing shows on the site
   await page.goto(BASE, { waitUntil: 'networkidle' });

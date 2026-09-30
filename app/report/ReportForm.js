@@ -1,9 +1,10 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Script from 'next/script';
 import { submitReport } from '@/app/actions';
-import { PACKAGES, RELATIONS, AREAS, CONSENT_TEXT } from '@/lib/constants';
+import { PACKAGES, RELATIONS, AREAS } from '@/lib/constants';
 
 function Err({ msg, id }) {
   return msg ? (
@@ -13,8 +14,47 @@ function Err({ msg, id }) {
   ) : null;
 }
 
-export default function ReportForm({ bars, initial }) {
+// Cloudflare Turnstile "Verify you are human" check. Renders only when the site has keys set.
+function useCaptcha(siteKey, state) {
+  const box = useRef(null);
+  const widget = useRef(null);
+  const [token, setToken] = useState('');
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!siteKey || !ready || !box.current || widget.current !== null || !window.turnstile) return;
+    widget.current = window.turnstile.render(box.current, {
+      sitekey: siteKey,
+      theme: 'auto',
+      'response-field': false,
+      callback: (t) => setToken(t),
+      'expired-callback': () => setToken(''),
+      'error-callback': () => setToken(''),
+    });
+  }, [siteKey, ready]);
+
+  // Each pass works once, so get a fresh one after a submission comes back with errors.
+  useEffect(() => {
+    if (state?.errors && widget.current !== null && window.turnstile) {
+      window.turnstile.reset(widget.current);
+      setToken('');
+    }
+  }, [state]);
+
+  useEffect(() => {
+    if (siteKey && typeof window !== 'undefined' && window.turnstile) setReady(true);
+    return () => {
+      if (widget.current !== null && window.turnstile) window.turnstile.remove(widget.current);
+      widget.current = null;
+    };
+  }, [siteKey]);
+
+  return { box, token, onLoad: () => setReady(true) };
+}
+
+export default function ReportForm({ bars, initial, captchaSiteKey }) {
   const [state, action, pending] = useActionState(submitReport, { values: {} });
+  const captcha = useCaptcha(captchaSiteKey, state);
   const v = state?.values ?? {};
   const e = state?.errors ?? {};
   const [barId, setBarId] = useState(v.barId ?? initial.barId ?? '');
@@ -142,28 +182,29 @@ export default function ReportForm({ bars, initial }) {
         <textarea id="note" name="note" defaultValue={v.note} placeholder="e.g. They put Sunday Ticket games on the back-room TVs." />
       </fieldset>
 
-      <fieldset>
-        <label className="field-label" htmlFor="email">
-          Your email
-        </label>
-        <p className="hint">We'll send a link to confirm it's you. We won't show your email on the site.</p>
-        <input id="email" name="email" type="email" autoComplete="email" required defaultValue={v.email} />
-        <Err msg={e.email} />
-        <label className="optin" htmlFor="optIn" style={{ marginTop: 8 }}>
-          <input id="optIn" name="optIn" type="checkbox" value="yes" defaultChecked={v.optIn === true} />
-          <span>{CONSENT_TEXT}</span>
-        </label>
-      </fieldset>
-
       <div className="hp" aria-hidden="true">
         <label htmlFor="website_url">Leave this empty</label>
         <input id="website_url" name="website_url" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
+      {captchaSiteKey && (
+        <fieldset>
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
+            onReady={captcha.onLoad}
+          />
+          <div ref={captcha.box} id="captcha" />
+          <input type="hidden" name="captchaToken" value={captcha.token} readOnly />
+          <Err msg={e.captcha} />
+        </fieldset>
+      )}
+
       <div className="actions">
-        <button className="btn primary" type="submit" disabled={pending}>
+        <button className="btn primary" type="submit" disabled={pending || (captchaSiteKey && !captcha.token)} id="send-report">
           {pending ? 'Sending…' : 'Send report'}
         </button>
+        {captchaSiteKey && !captcha.token && <span className="small">Complete the check above to send.</span>}
         <span className="small">
           See our <Link href="/privacy">privacy policy</Link>.
         </span>
