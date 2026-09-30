@@ -23,6 +23,11 @@ page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
 try {
+  // Setup check page
+  await page.goto(`${BASE}/status`, { waitUntil: 'networkidle' });
+  check((await page.textContent('#db-status')).includes('82 bars'), 'setup check reports a working database');
+  await page.screenshot({ path: `${SHOTS}/status.png`, fullPage: true });
+
   // Finder
   await page.goto(BASE, { waitUntil: 'networkidle' });
   check((await page.locator('li.bar').count()) === 82, 'home lists 82 bars');
