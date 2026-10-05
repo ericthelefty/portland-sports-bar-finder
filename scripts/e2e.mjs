@@ -42,7 +42,7 @@ try {
   check((await page.locator('li.bar').count()) === 1, 'search finds Kooks');
 
   // Brand, city path and redirects
-  check((await page.textContent('#tagline'))?.includes('Not out of luck'), 'city page shows the Oombar tagline');
+  check((await page.textContent('#tagline'))?.includes('not out of reach'), 'city page shows the Oombar tagline');
   check((await page.textContent('#city-name'))?.includes('Portland'), 'city page names Portland');
   check((await page.title()).includes('Oombar'), `page title mentions Oombar (${await page.title()})`);
   check((await page.textContent('.logo'))?.toLowerCase() === 'oombar', 'logo reads Oombar');

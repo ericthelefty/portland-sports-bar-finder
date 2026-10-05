@@ -18,7 +18,7 @@ export default async function CityHome({ params }) {
   const city = getCity((await params).city);
   const bars = await getBars();
   const confirmed = bars.filter((b) => b.packages.some((p) => p.status === 'has')).length;
-  const [first, second] = TAGLINE.split('. ');
+  const [first, second] = TAGLINE.split(', ');
   return (
     <>
       <header className="hero">
@@ -27,7 +27,7 @@ export default async function CityHome({ params }) {
             {city.full}
           </p>
           <h1 id="tagline">
-            {first}.
+            {first},
             <br />
             <span>{second}</span>
           </h1>
