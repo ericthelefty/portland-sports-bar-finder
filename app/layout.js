@@ -33,11 +33,11 @@ export default function RootLayout({ children }) {
       <body>
         <div className="wrap">
           <nav className="site-nav" aria-label="Main">
-            <Link href={home} className="logo" aria-label={`${BRAND} home`}>
+            <Link href="/" className="logo" aria-label={`${BRAND} home`}>
               Oom<span>bar</span>
             </Link>
             <div className="nav-links">
-              <Link href={home}>All bars</Link>
+              <Link href={home}>Portland bars</Link>
               <Link href={cityPath(DEFAULT_CITY, '/report')} className="nav-cta">
                 Report a TV package
               </Link>

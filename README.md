@@ -6,7 +6,7 @@
 
 ## What it does
 
-- **Home** (`/`): goes to `/pdx` while Portland is the only city.
+- **Home** (`/`): the Oombar brand page, with the tagline, what OOM means and a card for each city.
 - **Finder** (`/pdx`): search 82 Portland bars, filter by package and part of town.
 - **Bar pages** (`/pdx/bars/[id]`): each package's status, where it came from and when it was confirmed, with a "Not right?" link.
 - **Report form** (`/pdx/report`): anyone can report packages a bar has or doesn't have, or add a missing bar. No email needed; a Cloudflare Turnstile check blocks bots.

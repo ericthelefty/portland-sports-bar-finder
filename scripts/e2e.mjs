@@ -47,7 +47,14 @@ try {
   check((await page.title()).includes('Oombar'), `page title mentions Oombar (${await page.title()})`);
   check((await page.textContent('.logo'))?.toLowerCase() === 'oombar', 'logo reads Oombar');
   await page.goto(BASE, { waitUntil: 'networkidle' });
-  check(new URL(page.url()).pathname === '/pdx', `home page goes to /pdx (${page.url()})`);
+  check(new URL(page.url()).pathname === '/', 'home page stays on the brand page');
+  check((await page.textContent('#tagline'))?.includes('not out of reach'), 'home page shows the tagline');
+  check((await page.textContent('#oom-def'))?.includes('out-of-market'), 'home page explains OOM');
+  check((await page.textContent('#city-pdx'))?.includes('82 bars'), 'Portland card shows the bar count');
+  check((await page.title()).startsWith('Oombar'), `home title starts with Oombar (${await page.title()})`);
+  await page.screenshot({ path: `${SHOTS}/brand-home.png`, fullPage: true });
+  await Promise.all([page.waitForURL('**/pdx'), page.click('#city-pdx')]);
+  check((await page.locator('li.bar').count()) === 82, 'Portland card opens the finder');
   const oldBar = await page.request.get(`${BASE}/bars/57`, { maxRedirects: 0 });
   check(oldBar.status() === 308 && oldBar.headers().location?.endsWith('/pdx/bars/57'), 'old bar links redirect to /pdx');
   const oldReport = await page.request.get(`${BASE}/report?bar=51&has=nfl_redzone`, { maxRedirects: 0 });
@@ -270,6 +277,9 @@ try {
   // Phone-width and dark-mode screenshots
   const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
   const pp = await phone.newPage();
+  await pp.goto(BASE, { waitUntil: 'networkidle' });
+  check(!(await pp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)), 'no sideways scrolling on the home page on a phone');
+  await pp.screenshot({ path: `${SHOTS}/phone-brand-home-dark.png`, fullPage: true });
   await pp.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   const overflow = await pp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check(!overflow, 'no sideways scrolling on a phone');
