@@ -4,10 +4,11 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PACKAGES, AREAS, packageLabel } from '@/lib/constants';
 import { shortAddress } from '@/lib/format';
+import { cityPath } from '@/lib/cities';
 
 const hasPkg = (bar, key) => bar.packages.some((p) => p.package === key && p.status === 'has');
 
-export default function Finder({ bars }) {
+export default function Finder({ bars, city }) {
   const [picked, setPicked] = useState([]);
   const [area, setArea] = useState('all');
   const [query, setQuery] = useState('');
@@ -38,7 +39,7 @@ export default function Finder({ bars }) {
   const toggle = (key) => setPicked((cur) => (cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]));
   const filterText = [
     picked.length ? `with ${picked.map(packageLabel).join(' + ')}` : '',
-    area !== 'all' ? `in ${area} Portland` : '',
+    area !== 'all' ? `in ${area} ${city.name}` : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -97,7 +98,7 @@ export default function Finder({ bars }) {
 
       <p className="note">
         <strong>Blank doesn't mean no.</strong> Most bars don't list their TV packages online, so a bar without tags may
-        still carry them. Know what a bar has? <Link href="/report">Report it</Link> and we'll add it after a quick
+        still carry them. Know what a bar has? <Link href={cityPath(city.slug, '/report')}>Report it</Link> and we'll add it after a quick
         review.
       </p>
 
@@ -108,14 +109,14 @@ export default function Finder({ bars }) {
       {rows.length === 0 ? (
         <p className="empty">
           No bar has confirmed {picked.length ? picked.map(packageLabel).join(' + ') : 'a match'}
-          {area !== 'all' ? ` in ${area} Portland` : ''} yet. Try fewer packages or another area. Bars marked "every
+          {area !== 'all' ? ` in ${area} ${city.name}` : ''} yet. Try fewer packages or another area. Bars marked "every
           package" may carry it too.
         </p>
       ) : (
         <ul className="bars">
           {rows.map((b) => (
             <li key={b.id} className="bar">
-              <Link href={`/bars/${b.id}`} className="bar-row">
+              <Link href={cityPath(city.slug, `/bars/${b.id}`)} className="bar-row">
                 <span className="area" aria-label={`Area ${b.area || 'unknown'}`}>
                   {b.area || '—'}
                 </span>

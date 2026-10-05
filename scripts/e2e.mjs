@@ -25,7 +25,7 @@ page.on('console', (m) => m.type() === 'error' && !(m.location()?.url || '').inc
 
 try {
   // Finder
-  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   check((await page.locator('li.bar').count()) === 82, 'home lists 82 bars');
   await page.click('#pk-nfl_sunday_ticket');
   check((await page.locator('li.bar').count()) === 6, 'Sunday Ticket filter shows 6 bars');
@@ -41,12 +41,28 @@ try {
   await page.fill('#q', 'kooks');
   check((await page.locator('li.bar').count()) === 1, 'search finds Kooks');
 
+  // Brand, city path and redirects
+  check((await page.textContent('#tagline'))?.includes('Not out of luck'), 'city page shows the Oombar tagline');
+  check((await page.textContent('#city-name'))?.includes('Portland'), 'city page names Portland');
+  check((await page.title()).includes('Oombar'), `page title mentions Oombar (${await page.title()})`);
+  check((await page.textContent('.logo'))?.toLowerCase() === 'oombar', 'logo reads Oombar');
+  await page.goto(BASE, { waitUntil: 'networkidle' });
+  check(new URL(page.url()).pathname === '/pdx', `home page goes to /pdx (${page.url()})`);
+  const oldBar = await page.request.get(`${BASE}/bars/57`, { maxRedirects: 0 });
+  check(oldBar.status() === 308 && oldBar.headers().location?.endsWith('/pdx/bars/57'), 'old bar links redirect to /pdx');
+  const oldReport = await page.request.get(`${BASE}/report?bar=51&has=nfl_redzone`, { maxRedirects: 0 });
+  check(oldReport.headers().location?.endsWith('/pdx/report?bar=51&has=nfl_redzone'), 'old report links keep their bar and package');
+  const badCity = await page.request.get(`${BASE}/sea`);
+  check(badCity.status() === 404, 'an unknown city returns 404');
+  const privacy = await page.request.get(`${BASE}/privacy`);
+  check(privacy.status() === 200, 'privacy page still lives at /privacy');
+
   // Bar page
-  await page.goto(`${BASE}/bars/57`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/pdx/bars/57`, { waitUntil: 'networkidle' });
   check((await page.textContent('h1'))?.includes('Garden Tavern'), 'bar page shows Garden Tavern');
   check(await page.locator('#row-nfl_sunday_ticket .st.has').isVisible(), 'Garden Tavern lists Sunday Ticket');
   await page.screenshot({ path: `${SHOTS}/bar-page.png`, fullPage: true });
-  const r404 = await page.goto(`${BASE}/bars/99999`);
+  const r404 = await page.goto(`${BASE}/pdx/bars/99999`);
   check(r404.status() === 404, 'unknown bar returns 404');
   errors.length = 0; // the 404 above is expected
 
@@ -58,7 +74,7 @@ try {
     }, null, { timeout: 30000 });
 
   // Report form: no email field, bot check shown, validation errors
-  await page.goto(`${BASE}/report`, { waitUntil: 'load' });
+  await page.goto(`${BASE}/pdx/report`, { waitUntil: 'load' });
   check((await page.locator('#email, #optIn').count()) === 0, 'report form has no email or email-list fields');
   await captchaReady();
   check(true, 'bot check passes and enables the Send button');
@@ -69,7 +85,7 @@ try {
   await page.screenshot({ path: `${SHOTS}/report-errors.png`, fullPage: true });
 
   // A report without a valid bot-check pass is refused
-  await page.goto(`${BASE}/report?bar=51&has=nfl_redzone`, { waitUntil: 'load' });
+  await page.goto(`${BASE}/pdx/report?bar=51&has=nfl_redzone`, { waitUntil: 'load' });
   await page.check('#rel-saw');
   await captchaReady();
   await page.evaluate(() => (document.querySelector('input[name=captchaToken]').value = ''));
@@ -80,7 +96,7 @@ try {
   check(noCaptchaRows === 0, 'the refused report is not stored');
 
   // Report 1: Kooks has NHL Center Ice
-  await page.goto(`${BASE}/report?bar=64&has=nhl_center_ice`, { waitUntil: 'load' });
+  await page.goto(`${BASE}/pdx/report?bar=64&has=nhl_center_ice`, { waitUntil: 'load' });
   check(await page.isChecked('#has-nhl_center_ice'), 'report link pre-checks the package');
   check((await page.inputValue('#barSearch')) === 'Kooks (N)', 'report link fills in the bar');
   await page.check('#rel-saw');
@@ -91,14 +107,14 @@ try {
   check(true, 'report 1 submitted');
 
   // Report 2: dispute Hop Haven's Sunday Ticket
-  await page.goto(`${BASE}/report?bar=46&dispute=nfl_sunday_ticket`, { waitUntil: 'load' });
+  await page.goto(`${BASE}/pdx/report?bar=46&dispute=nfl_sunday_ticket`, { waitUntil: 'load' });
   check(await page.isChecked('#not-nfl_sunday_ticket'), '"Not right?" link pre-checks the doesn\'t-have box');
   await page.check('#rel-staff');
   await captchaReady();
   await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
 
   // Report 3: a bar that isn't listed
-  await page.goto(`${BASE}/report`, { waitUntil: 'load' });
+  await page.goto(`${BASE}/pdx/report`, { waitUntil: 'load' });
   // Bar search: type part of a name, pick from the narrowed list
   await page.fill('#barSearch', 'spirit');
   check((await page.locator('.picker-list [data-option]').count()) === 2, 'typing "spirit" narrows the list to Spirit of 77 plus "not listed"');
@@ -126,7 +142,7 @@ try {
   await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
 
   // Honeypot: a bot-filled report is silently dropped
-  await page.goto(`${BASE}/report?bar=3`, { waitUntil: 'load' });
+  await page.goto(`${BASE}/pdx/report?bar=3`, { waitUntil: 'load' });
   await page.check('#has-nfl_redzone');
   await page.check('#rel-saw');
   await captchaReady();
@@ -181,10 +197,10 @@ try {
   await page.screenshot({ path: `${SHOTS}/admin-reviewed.png`, fullPage: true });
 
   // Updated listing shows on the site
-  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   await page.click('#pk-nhl_center_ice');
   check((await page.locator('li.bar').count()) === 2, 'NHL Center Ice filter now shows 2 bars');
-  await page.goto(`${BASE}/bars/64`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/pdx/bars/64`, { waitUntil: 'networkidle' });
   check((await page.textContent('#row-nhl_center_ice')).includes('Reported by a fan'), 'Kooks page credits the fan report');
 
   // Manage bars: add, edit packages, hide, delete
@@ -211,7 +227,7 @@ try {
   const [addedPkg] = added ? await sql`select status, source from bar_packages where bar_id = ${added.id}` : [];
   check(added?.area === 'NE' && added?.website === 'https://e2etestpub.example', 'new bar saved with area and website');
   check(addedPkg?.status === 'has' && addedPkg?.source === 'admin', 'new bar has NBA League Pass marked by the site');
-  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   await page.click('#pk-nba_league_pass');
   check((await page.locator('li.bar').count()) === 2, 'new bar appears in the NBA League Pass filter');
 
@@ -224,16 +240,16 @@ try {
   const gt = Object.fromEntries((await sql`select package, source from bar_packages where bar_id = 57`).map((r) => [r.package, r.source]));
   check(!gt.mls_season_pass && gt.nba_league_pass === 'admin' && gt.nfl_sunday_ticket === 'bar_website',
     'editing packages updates only what changed');
-  await page.goto(`${BASE}/bars/57`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/pdx/bars/57`, { waitUntil: 'networkidle' });
   check((await page.textContent('#row-nba_league_pass')).includes('Confirmed by the site'), 'bar page credits the site');
 
   // Hide the test bar
   await page.goto(`${BASE}/admin/bars/${added.id}`, { waitUntil: 'networkidle' });
   await page.uncheck('#active');
   await Promise.all([page.waitForURL('**/admin/bars?saved=**'), page.click('#save-bar')]);
-  const hidden = await page.request.get(`${BASE}/bars/${added.id}`);
+  const hidden = await page.request.get(`${BASE}/pdx/bars/${added.id}`);
   check(hidden.status() === 404, 'a hidden bar is not shown on the site');
-  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   check((await page.locator('li.bar').count()) === 83, 'home lists 83 bars with the test bar hidden');
 
   // Delete it
@@ -254,13 +270,13 @@ try {
   // Phone-width and dark-mode screenshots
   const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
   const pp = await phone.newPage();
-  await pp.goto(BASE, { waitUntil: 'networkidle' });
+  await pp.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   const overflow = await pp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check(!overflow, 'no sideways scrolling on a phone');
   await pp.screenshot({ path: `${SHOTS}/phone-home-dark.png` });
-  await pp.goto(`${BASE}/report?bar=51`, { waitUntil: 'load' });
+  await pp.goto(`${BASE}/pdx/report?bar=51`, { waitUntil: 'load' });
   await pp.screenshot({ path: `${SHOTS}/phone-report-dark.png`, fullPage: true });
-  await pp.goto(`${BASE}/bars/78`, { waitUntil: 'networkidle' });
+  await pp.goto(`${BASE}/pdx/bars/78`, { waitUntil: 'networkidle' });
   await pp.screenshot({ path: `${SHOTS}/phone-bar-dark.png`, fullPage: true });
   await phone.close();
 } catch (err) {

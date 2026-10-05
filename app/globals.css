@@ -61,11 +61,14 @@ h1, h2, h3 { text-wrap: balance; }
 .nav-cta { background: var(--accent); color: var(--accent-ink) !important; padding: 8px 12px; border-radius: 6px; }
 
 .site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; max-width: 78ch; }
+.site-footer .footer-brand { color: var(--ink); }
+.site-footer .footer-brand b { font: 800 16px/1 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
 
 /* Page headings */
 .hero { padding-block: 28px 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; }
 .hero h1, .page-title { font: 800 clamp(34px, 6vw, 54px)/0.92 var(--display); text-transform: uppercase; letter-spacing: 0.01em; margin: 0; }
 .hero h1 span { color: var(--accent); }
+.hero .kicker { font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin: 0 0 10px; }
 .hero p, .lede { color: var(--muted); margin: 8px 0 0; max-width: 56ch; }
 .page-title { font-size: clamp(30px, 5vw, 44px); margin-top: 28px; }
 .tally { font: 500 12px/1.4 var(--mono); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }

@@ -1,15 +1,18 @@
-# Portland Sports Bar Finder
+# Oombar
 
-Find sports bars in Portland, Oregon by the out-of-market TV packages they carry: NFL Sunday Ticket, NFL RedZone, NBA League Pass, NHL Center Ice, MLB Extra Innings and MLS Season Pass.
+**Out of market. Not out of luck.** Oombar ("OOM" is short for out-of-market) finds sports bars by the out-of-market TV packages they carry: NFL Sunday Ticket, NFL RedZone, NBA League Pass, NHL Center Ice, MLB Extra Innings and MLS Season Pass. It starts with Portland, Oregon at [oombar.com/pdx](https://oombar.com/pdx).
 
 **To put the site online, follow [SETUP.md](SETUP.md).** No coding needed.
 
 ## What it does
 
-- **Finder** (`/`): search 82 Portland bars, filter by package and part of town.
-- **Bar pages** (`/bars/[id]`): each package's status, where it came from and when it was confirmed, with a "Not right?" link.
-- **Report form** (`/report`): anyone can report packages a bar has or doesn't have, or add a missing bar. No email needed; a Cloudflare Turnstile check blocks bots.
+- **Home** (`/`): goes to `/pdx` while Portland is the only city.
+- **Finder** (`/pdx`): search 82 Portland bars, filter by package and part of town.
+- **Bar pages** (`/pdx/bars/[id]`): each package's status, where it came from and when it was confirmed, with a "Not right?" link.
+- **Report form** (`/pdx/report`): anyone can report packages a bar has or doesn't have, or add a missing bar. No email needed; a Cloudflare Turnstile check blocks bots.
 - **Review page** (`/admin`): password-protected queue to approve or reject reports, and a Manage bars section to add, edit, hide or delete bars.
+
+Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. Cities are listed in `lib/cities.js`; adding a second one also needs a city column on the bars table.
 
 ## How it's built
 
@@ -26,6 +29,7 @@ Find sports bars in Portland, Oregon by the out-of-market TV packages they carry
 | `TURNSTILE_SITE_KEY` | For the bot check | Cloudflare Turnstile site key |
 | `TURNSTILE_SECRET_KEY` | For the bot check | Cloudflare Turnstile secret key |
 | `CONTACT_EMAIL` | No | Shown on the privacy page |
+| `SITE_URL` | No | The site's main address for link previews. Defaults to `https://oombar.com` |
 
 ## Tests
 

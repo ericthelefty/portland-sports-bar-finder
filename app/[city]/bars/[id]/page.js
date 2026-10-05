@@ -3,25 +3,31 @@ import { notFound } from 'next/navigation';
 import { getBar } from '@/lib/data';
 import { PACKAGES, SOURCE_LABELS } from '@/lib/constants';
 import { formatDate, isStale, mapsUrl } from '@/lib/format';
+import { cityPath } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const bar = await getBar(id);
-  return { title: bar ? bar.name : 'Bar not found' };
+  if (!bar) return { title: 'Bar not found' };
+  return {
+    title: `${bar.name}: TV packages`,
+    description: `Which out-of-market TV packages ${bar.name} carries, like NFL Sunday Ticket and NBA League Pass.`,
+  };
 }
 
 export default async function BarPage({ params }) {
-  const { id } = await params;
+  const { id, city } = await params;
   const bar = await getBar(id);
   if (!bar) notFound();
+  const report = (q = '') => cityPath(city, `/report?bar=${bar.id}${q}`);
   const byKey = Object.fromEntries(bar.packages.map((p) => [p.package, p]));
 
   return (
     <article>
       <p className="crumb">
-        <Link href="/">← All bars</Link>
+        <Link href={cityPath(city)}>← All bars</Link>
       </p>
       <header className="bar-head">
         {bar.area && <span className="area">{bar.area}</span>}
@@ -102,17 +108,17 @@ export default async function BarPage({ params }) {
                   </td>
                   <td>
                     {row?.status === 'has' && (
-                      <Link href={`/report?bar=${bar.id}&dispute=${p.key}`} className="small">
+                      <Link href={report(`&dispute=${p.key}`)} className="small">
                         Not right?
                       </Link>
                     )}
                     {row?.status === 'not' && (
-                      <Link href={`/report?bar=${bar.id}&has=${p.key}`} className="small">
+                      <Link href={report(`&has=${p.key}`)} className="small">
                         They have it now?
                       </Link>
                     )}
                     {!row && (
-                      <Link href={`/report?bar=${bar.id}&has=${p.key}`} className="small">
+                      <Link href={report(`&has=${p.key}`)} className="small">
                         Report it
                       </Link>
                     )}
@@ -132,7 +138,7 @@ export default async function BarPage({ params }) {
       )}
 
       <p style={{ marginTop: 20 }}>
-        <Link href={`/report?bar=${bar.id}`} className="btn primary">
+        <Link href={report()} className="btn primary">
           Report a TV package here
         </Link>
       </p>

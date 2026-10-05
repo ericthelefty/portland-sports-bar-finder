@@ -8,6 +8,7 @@ import { sql, ensureDb } from '@/lib/db';
 import { PACKAGE_KEYS, RELATIONS, AREAS } from '@/lib/constants';
 import { verifyCaptcha } from '@/lib/captcha';
 import { isAdmin, passwordMatches, startSession, endSession } from '@/lib/auth';
+import { getCity, DEFAULT_CITY, cityPath } from '@/lib/cities';
 
 const MAX_REPORTS_PER_HOUR = 6;
 
@@ -22,6 +23,8 @@ const hashIp = (ip) => createHash('sha256').update(`pdx-bars:${ip}`).digest('hex
 
 // Handles the public "Report a TV package" form.
 export async function submitReport(_prev, formData) {
+  const city = getCity(clean(formData.get('city'), 20))?.slug ?? DEFAULT_CITY;
+  const thanks = cityPath(city, '/report/thanks');
   const values = Object.fromEntries(
     ['barId', 'newBarName', 'newBarAddress', 'newBarArea', 'relation', 'seenOn', 'link', 'note', 'otherPackage'].map(
       (k) => [k, clean(formData.get(k), k === 'note' ? 1000 : 300)]
@@ -32,7 +35,7 @@ export async function submitReport(_prev, formData) {
   const state = { values: { ...values, has, not } };
 
   // Bots fill in every field, including this hidden one.
-  if (clean(formData.get('website_url'))) redirect('/report/thanks');
+  if (clean(formData.get('website_url'))) redirect(thanks);
 
   const addingBar = values.barId === 'new';
   const barId = addingBar ? null : Number(values.barId);
@@ -71,7 +74,7 @@ export async function submitReport(_prev, formData) {
     values (${barId}, ${addingBar ? values.newBarName : ''}, ${addingBar ? values.newBarAddress : ''},
             ${addingBar ? values.newBarArea : ''}, ${has.join(',')}, ${not.join(',')}, ${values.otherPackage},
             ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, '', ${ipHash})`;
-  redirect('/report/thanks');
+  redirect(thanks);
 }
 
 export async function adminLogin(_prev, formData) {

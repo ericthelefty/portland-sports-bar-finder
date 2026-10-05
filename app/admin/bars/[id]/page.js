@@ -6,6 +6,7 @@ import AdminNav from '../../AdminNav';
 import LoginForm from '../../LoginForm';
 import BarForm from '../BarForm';
 import { deleteBar } from '../actions';
+import { DEFAULT_CITY, cityPath } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Edit bar', robots: { index: false, follow: false } };
@@ -31,7 +32,7 @@ export default async function EditBar({ params, searchParams }) {
         {bar.active && (
           <>
             {' · '}
-            <Link href={`/bars/${bar.id}`}>View on site</Link>
+            <Link href={cityPath(DEFAULT_CITY, `/bars/${bar.id}`)}>View on site</Link>
           </>
         )}
       </p>

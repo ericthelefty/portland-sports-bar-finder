@@ -53,7 +53,7 @@ function useCaptcha(siteKey, state) {
   return { box, token, onLoad: () => setReady(true) };
 }
 
-export default function ReportForm({ bars, initial, captchaSiteKey }) {
+export default function ReportForm({ bars, initial, captchaSiteKey, city }) {
   const [state, action, pending] = useActionState(submitReport, { values: {} });
   const captcha = useCaptcha(captchaSiteKey, state);
   const v = state?.values ?? {};
@@ -67,6 +67,7 @@ export default function ReportForm({ bars, initial, captchaSiteKey }) {
   return (
     <form className="report" action={action} noValidate>
       {e.form && <p className="form-error">{e.form}</p>}
+      <input type="hidden" name="city" value={city.slug} />
 
       <fieldset>
         <label className="field-label" htmlFor="barSearch">
@@ -106,7 +107,7 @@ export default function ReportForm({ bars, initial, captchaSiteKey }) {
               <option value="">Not sure</option>
               {AREAS.map((a) => (
                 <option key={a} value={a}>
-                  {a} Portland
+                  {a} {city.name}
                 </option>
               ))}
             </select>

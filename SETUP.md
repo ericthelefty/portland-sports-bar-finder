@@ -85,11 +85,15 @@ Until both keys are set, the form works without the check, and your review page 
 
 ---
 
-## Optional: your own web address
+## Connect oombar.com
 
 1. In Vercel, open your project and go to **Settings → Domains**.
-2. Buy a domain there, or add one you already own and follow the DNS instructions Vercel shows.
-3. In Cloudflare, open your Turnstile widget and add the new domain to its **Hostnames**.
+2. Type `oombar.com` and click **Add**. When Vercel asks, choose to also add `www.oombar.com` and redirect it to `oombar.com`.
+3. Vercel shows one or two DNS records (usually an **A** record and a **CNAME** record). Sign in where you bought the domain, open its **DNS** settings and add those records exactly as shown. Delete any "parking page" or "forwarding" records the registrar added.
+4. Wait until Vercel shows **Valid Configuration** next to both addresses. This often takes a few minutes and can take up to a day.
+5. In Cloudflare, open your Turnstile widget and add `oombar.com` and `www.oombar.com` to its **Hostnames**. Skip this and the report form's bot check will fail on the new address.
+
+The old `portland-sports-bar-finder.vercel.app` address keeps working too.
 
 ## Optional: a contact email on the privacy page
 

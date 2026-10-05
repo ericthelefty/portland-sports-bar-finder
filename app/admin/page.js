@@ -7,6 +7,7 @@ import { packageLabel, relationLabel, AREAS } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
 import LoginForm from './LoginForm';
 import AdminNav from './AdminNav';
+import { DEFAULT_CITY, cityPath } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Review reports', robots: { index: false, follow: false } };
@@ -79,7 +80,7 @@ export default async function AdminPage() {
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <h3 id={`rh-${r.id}`}>
                 {r.barId ? (
-                  <Link href={`/bars/${r.barId}`} target="_blank">
+                  <Link href={cityPath(DEFAULT_CITY, `/bars/${r.barId}`)} target="_blank">
                     {r.barName}
                   </Link>
                 ) : (
