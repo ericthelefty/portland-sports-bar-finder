@@ -1,7 +1,9 @@
+import { CONTACT_EMAIL } from '@/lib/cities';
+
 export const metadata = { title: 'Privacy' };
 
 export default function Privacy() {
-  const contact = process.env.CONTACT_EMAIL;
+  const contact = CONTACT_EMAIL;
   return (
     <div className="prose">
       <h1 className="page-title">Privacy</h1>
@@ -37,7 +39,7 @@ export default function Privacy() {
         <>
           <h2>Questions</h2>
           <p>
-            Email <span className="mono">{contact}</span>.
+            Email <a href={`mailto:${contact}`}>{contact}</a>.
           </p>
         </>
       )}

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Big_Shoulders, Public_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
-import { BRAND, TAGLINE, DEFAULT_CITY, cityPath } from '@/lib/cities';
+import { BRAND, TAGLINE, CONTACT_EMAIL, DEFAULT_CITY, cityPath } from '@/lib/cities';
 
 const display = Big_Shoulders({ subsets: ['latin'], weight: ['600', '800'], variable: '--font-display' });
 const body = Public_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
@@ -53,7 +53,10 @@ export default function RootLayout({ children }) {
               from season to season, so call ahead for a must-see game.
             </p>
             <p>
-              <Link href={cityPath(DEFAULT_CITY, '/report')}>Report a TV package</Link> · <Link href="/privacy">Privacy</Link>
+              <Link href={cityPath(DEFAULT_CITY, '/report')}>Report a TV package</Link> · <Link href="/privacy">Privacy</Link> · Questions?{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} id="contact-email">
+                {CONTACT_EMAIL}
+              </a>
             </p>
           </footer>
         </div>

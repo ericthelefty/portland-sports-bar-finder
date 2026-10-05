@@ -51,6 +51,7 @@ try {
   check((await page.textContent('#tagline'))?.includes('not out of reach'), 'home page shows the tagline');
   check((await page.textContent('#oom-def'))?.includes('out-of-market'), 'home page explains OOM');
   check((await page.textContent('#city-pdx'))?.includes('82 bars'), 'Portland card shows the bar count');
+  check((await page.getAttribute('#contact-email', 'href')) === 'mailto:info@oombar.com', 'footer shows info@oombar.com');
   check((await page.title()).startsWith('Oombar'), `home title starts with Oombar (${await page.title()})`);
   await page.screenshot({ path: `${SHOTS}/brand-home.png`, fullPage: true });
   await Promise.all([page.waitForURL('**/pdx'), page.click('#city-pdx')]);

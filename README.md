@@ -28,7 +28,7 @@ Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. Cities ar
 | `ADMIN_PASSWORD` | Yes | Password for `/admin` (8+ characters) |
 | `TURNSTILE_SITE_KEY` | For the bot check | Cloudflare Turnstile site key |
 | `TURNSTILE_SECRET_KEY` | For the bot check | Cloudflare Turnstile secret key |
-| `CONTACT_EMAIL` | No | Shown on the privacy page |
+| `CONTACT_EMAIL` | No | Shown in the footer and on the privacy page. Defaults to `info@oombar.com` |
 | `SITE_URL` | No | The site's main address for link previews. Defaults to `https://oombar.com` |
 
 ## Tests

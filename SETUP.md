@@ -96,11 +96,16 @@ Until both keys are set, the form works without the check, and your review page 
 
 The old `portland-sports-bar-finder.vercel.app` address keeps working too.
 
-## Optional: a contact email on the privacy page
+## Contact email (info@oombar.com)
 
-Add an environment variable `CONTACT_EMAIL` with the address people can write to with questions, then redeploy.
+The site shows `info@oombar.com` in its footer and on the privacy page. To actually receive that mail, turn on Namecheap's free email forwarding:
 
----
+1. In Namecheap, go to **Domain List** and click **Manage** next to oombar.com.
+2. Find **Redirect Email** (on the **Domain** tab; some accounts show it under **Mail Settings → Email Forwarding**). If asked, choose **Email Forwarding** as the mail setting.
+3. Add a forwarder: **Alias** `info`, **Forward to** your own email address. Save.
+4. Send a test email to info@oombar.com and check that it arrives (look in spam the first time).
+
+Email forwarding doesn't touch the website records you added for Vercel, so the site keeps working. To show a different address, add an environment variable `CONTACT_EMAIL` in Vercel and redeploy.
 
 ## Good to know
 
