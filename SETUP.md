@@ -90,6 +90,7 @@ Until both keys are set, the form works without the check, and your review page 
 1. In Vercel, open your project and go to **Settings → Domains**.
 2. Type `oombar.com` and click **Add**. When Vercel asks, choose to also add `www.oombar.com` and redirect it to `oombar.com`.
 3. Vercel shows one or two DNS records (usually an **A** record and a **CNAME** record). Sign in where you bought the domain, open its **DNS** settings and add those records exactly as shown. Delete any "parking page" or "forwarding" records the registrar added.
+   - **Namecheap** (where oombar.com was bought): go to **Domain List**, click **Manage** next to the domain, then open the **Advanced DNS** tab. Delete Namecheap's default **URL Redirect Record** and its `parkingpage.namecheap.com` CNAME, then add Vercel's records with **Add New Record**. Use `@` as the Host for `oombar.com` and `www` for `www.oombar.com`.
 4. Wait until Vercel shows **Valid Configuration** next to both addresses. This often takes a few minutes and can take up to a day.
 5. In Cloudflare, open your Turnstile widget and add `oombar.com` and `www.oombar.com` to its **Hostnames**. Skip this and the report form's bot check will fail on the new address.
 
