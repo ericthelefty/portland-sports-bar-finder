@@ -62,7 +62,7 @@ h1, h2, h3 { text-wrap: balance; }
 
 .site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; max-width: 78ch; }
 .site-footer .footer-brand { color: var(--ink); }
-.site-footer .footer-brand b { font: 800 16px/1 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
+.site-footer .footer-brand b { font: 800 16px/1 var(--display); text-transform: uppercase; letter-spacing: 0; font-kerning: none; }
 
 /* Page headings */
 .hero { padding-block: 28px 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; }

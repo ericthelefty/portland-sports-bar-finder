@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
               Oom<span>bar</span>
             </Link>
             <div className="nav-links">
-              <Link href={home}>Portland bars</Link>
+              <Link href={home}>Portland</Link>
               <Link href={cityPath(DEFAULT_CITY, '/report')} className="nav-cta">
                 Report a TV package
               </Link>
