@@ -96,7 +96,7 @@ export default function ReportForm({ bars, initial, captchaSiteKey, city }) {
               id="newBarAddress"
               name="newBarAddress"
               type="text"
-              placeholder="e.g. 1234 SE Division St"
+              placeholder="e.g. 1234 SE Division St, 97202"
               defaultValue={v.newBarAddress}
             />
             <Err msg={e.newBarAddress} />

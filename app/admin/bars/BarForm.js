@@ -63,7 +63,7 @@ export default function BarForm({ bar }) {
         <label className="field-label" htmlFor="address">
           Street address
         </label>
-        <input id="address" name="address" type="text" placeholder="e.g. 1234 SE Division St, Portland, OR" defaultValue={val('address')} />
+        <input id="address" name="address" type="text" placeholder="e.g. 1234 SE Division St, Portland, OR 97202" defaultValue={val('address')} />
       </fieldset>
 
       <fieldset>

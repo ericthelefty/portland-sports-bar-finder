@@ -44,6 +44,13 @@ try {
   await page.click('#area-all');
   await page.fill('#q', 'kooks');
   check((await page.locator('li.bar').count()) === 1, 'search finds Kooks');
+  check((await page.getAttribute('#q', 'placeholder')) === 'Search by bar or ZIP code', 'search box says bar or ZIP code');
+  await page.fill('#q', '97206');
+  const zipNames = await page.locator('li.bar h2').allTextContents();
+  check(zipNames.includes('Bucket Brigade Sports Bar') && zipNames.includes('Scoreboard Sports Bar'), `ZIP search finds bars in 97206 (${zipNames.length})`);
+  const [{ noZip }] = await sql`select count(*)::int as "noZip" from bars where active and address !~ ' 97[0-9]{3}$'`;
+  check(noZip === 0, `every bar address has a ZIP code (${noZip} missing)`);
+  await page.fill('#q', '');
 
   // Brand, city path and redirects
   check((await page.textContent('#tagline'))?.includes('not out of reach'), 'city page shows the Oombar tagline');

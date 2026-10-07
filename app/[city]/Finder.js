@@ -81,8 +81,9 @@ export default function Finder({ bars, city }) {
             className="search"
             id="q"
             type="search"
-            placeholder="Search by bar, street or team"
-            aria-label="Search bars"
+            inputMode="search"
+            placeholder="Search by bar or ZIP code"
+            aria-label="Search by bar or ZIP code"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
