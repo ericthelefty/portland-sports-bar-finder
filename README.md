@@ -1,6 +1,6 @@
 # Oombar
 
-**Out of market, not out of reach.** Oombar ("OOM" is short for out-of-market) finds sports bars by the out-of-market TV packages they carry: NFL Sunday Ticket, NFL RedZone, NBA League Pass, NHL Center Ice, MLB Extra Innings and MLS Season Pass. It starts with Portland, Oregon at [oombar.com/pdx](https://oombar.com/pdx).
+**Out of market, not out of reach.** Oombar ("OOM" is short for out-of-market) finds sports bars by the out-of-market TV packages they carry: NFL Sunday Ticket, NFL RedZone, NBA League Pass, WNBA League Pass, NHL Center Ice, MLB Extra Innings and MLS Season Pass. It starts with Portland, Oregon at [oombar.com/pdx](https://oombar.com/pdx).
 
 **To put the site online, follow [SETUP.md](SETUP.md).** No coding needed.
 

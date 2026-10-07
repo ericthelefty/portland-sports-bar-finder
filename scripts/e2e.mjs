@@ -27,6 +27,10 @@ try {
   // Finder
   await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   check((await page.locator('li.bar').count()) === 82, 'home lists 82 bars');
+  check((await page.textContent('#pk-wnba_league_pass'))?.includes('WNBA League Pass'), 'WNBA League Pass filter is shown');
+  await page.click('#pk-wnba_league_pass');
+  check((await page.locator('li.bar').count()) === 0, 'no bar has WNBA League Pass confirmed yet');
+  await page.click('#pk-wnba_league_pass');
   await page.click('#pk-nfl_sunday_ticket');
   check((await page.locator('li.bar').count()) === 6, 'Sunday Ticket filter shows 6 bars');
   await page.screenshot({ path: `${SHOTS}/home-filtered.png`, fullPage: true });
@@ -84,6 +88,7 @@ try {
   // Report form: no email field, bot check shown, validation errors
   await page.goto(`${BASE}/pdx/report`, { waitUntil: 'load' });
   check((await page.locator('#email, #optIn').count()) === 0, 'report form has no email or email-list fields');
+  check((await page.locator('#has-wnba_league_pass').count()) === 1 && (await page.locator('#not-wnba_league_pass').count()) === 1, 'report form offers WNBA League Pass');
   await captchaReady();
   check(true, 'bot check passes and enables the Send button');
   check((await page.locator('#captcha > *').count()) > 0, 'bot check widget is shown');
@@ -229,12 +234,15 @@ try {
   await page.fill('#address', '1 NE Test Ave, Portland, OR');
   await page.fill('#website', 'e2etestpub.example');
   await page.check('#pkg_nba_league_pass_has');
+  await page.check('#pkg_wnba_league_pass_has');
   await page.screenshot({ path: `${SHOTS}/add-bar.png`, fullPage: true });
   await Promise.all([page.waitForURL('**/admin/bars?saved=**'), page.click('#save-bar')]);
   const [added] = await sql`select id, website, area from bars where name = 'E2E Test Pub'`;
   const [addedPkg] = added ? await sql`select status, source from bar_packages where bar_id = ${added.id}` : [];
   check(added?.area === 'NE' && added?.website === 'https://e2etestpub.example', 'new bar saved with area and website');
   check(addedPkg?.status === 'has' && addedPkg?.source === 'admin', 'new bar has NBA League Pass marked by the site');
+  const addedPkgs = added ? (await sql`select package from bar_packages where bar_id = ${added.id} and status = 'has'`).map((r) => r.package) : [];
+  check(addedPkgs.includes('wnba_league_pass'), 'admin can mark WNBA League Pass');
   await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   await page.click('#pk-nba_league_pass');
   check((await page.locator('li.bar').count()) === 2, 'new bar appears in the NBA League Pass filter');
