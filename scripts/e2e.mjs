@@ -44,7 +44,7 @@ try {
   await page.click('#area-all');
   await page.fill('#q', 'kooks');
   check((await page.locator('li.bar').count()) === 1, 'search finds Kooks');
-  check((await page.getAttribute('#q', 'placeholder')) === 'Search by bar or ZIP code', 'search box says bar or ZIP code');
+  check((await page.getAttribute('#q', 'placeholder')) === 'Search by bar, team or ZIP code', 'search box says bar, team or ZIP code');
   await page.fill('#q', '97206');
   const zipNames = await page.locator('li.bar h2').allTextContents();
   check(zipNames.includes('Bucket Brigade Sports Bar') && zipNames.includes('Scoreboard Sports Bar'), `ZIP search finds bars in 97206 (${zipNames.length})`);
