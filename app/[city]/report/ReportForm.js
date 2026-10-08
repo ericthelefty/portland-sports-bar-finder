@@ -163,7 +163,7 @@ export default function ReportForm({ bars, initial, captchaSiteKey, city }) {
           list="team-list"
           autoComplete="off"
           aria-describedby="team-hint"
-          placeholder="e.g. Cleveland Browns, Sunderland AFC"
+          placeholder="e.g. Cleveland Browns, Sunderland"
           defaultValue={v.team}
         />
         <TeamOptions />

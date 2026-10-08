@@ -6,12 +6,15 @@ import { PACKAGES, AREAS, packageLabel } from '@/lib/constants';
 import { shortAddress } from '@/lib/format';
 import { cityPath } from '@/lib/cities';
 import { norm, searchTerms } from '@/lib/text';
+import { teamNames } from '@/lib/teams';
 
 const hasPkg = (bar, key) => bar.packages.some((p) => p.package === key && p.status === 'has');
 
 // Search text for each bar: name, address (with ZIP), type and team tags.
-const haystack = (b) => norm(`${b.name} ${b.address} ${b.type} ${b.teams.map((t) => t.team).join(' ')}`);
-const teamMatches = (team, terms) => terms.length > 0 && terms.every((t) => norm(team).includes(t));
+// Team tags count under every name the team goes by ("spurs" finds a Tottenham Hotspur bar).
+const haystack = (b) => norm(`${b.name} ${b.address} ${b.type} ${b.teams.flatMap((t) => teamNames(t.team)).join(' ')}`);
+const teamMatches = (team, terms) =>
+  terms.length > 0 && teamNames(team).some((name) => terms.every((t) => norm(name).includes(t)));
 
 export default function Finder({ bars, city }) {
   const [picked, setPicked] = useState([]);
