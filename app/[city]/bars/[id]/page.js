@@ -65,10 +65,7 @@ export default async function BarPage({ params }) {
           {bar.teams.map((t) => (
             <div key={t.team} className="team-line">
               <span className="tag team">{t.team} bar</span>
-              <span>
-                {t.team} fans meet here for games.
-                {t.official && <strong> Official supporters' club.</strong>}
-              </span>
+              <span>{t.team} fans meet here for games.</span>
               <span className="small mono">
                 {SOURCE_LABELS[t.source] ?? t.source}
                 {t.lastConfirmed ? `, ${formatDate(t.lastConfirmed)}` : ''}

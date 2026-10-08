@@ -149,7 +149,7 @@ export default function Finder({ bars, city }) {
                           className={`tag team${isTeamBar(b) && teamMatches(t.team, terms) ? ' hit' : ''}`}
                           title={`${t.team} fans meet here for games`}
                         >
-                          {t.team} bar{t.official ? ' · official club' : ''}
+                          {t.team} bar
                         </span>
                       ))}
                     </div>

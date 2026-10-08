@@ -275,16 +275,16 @@ try {
   await page.check('#pkg_mls_season_pass_unknown');
   await page.check('#pkg_nba_league_pass_has');
   await page.fill('#newTeam_0', 'Sunderland AFC');
-  await page.check('#newTeamOfficial_0');
   await Promise.all([page.waitForURL('**/admin/bars?saved=57'), page.click('#save-bar')]);
-  const [sund] = await sql`select team, official, source from bar_teams where bar_id = 57`;
-  check(sund?.team === 'Sunderland AFC' && sund?.official && sund?.source === 'admin', 'admin can tag a bar with any team as an official club');
+  const [sund] = await sql`select team, source from bar_teams where bar_id = 57`;
+  check(sund?.team === 'Sunderland AFC' && sund?.source === 'admin', 'admin can tag a bar with any team');
   const gt = Object.fromEntries((await sql`select package, source from bar_packages where bar_id = 57`).map((r) => [r.package, r.source]));
   check(!gt.mls_season_pass && gt.nba_league_pass === 'admin' && gt.nfl_sunday_ticket === 'bar_website',
     'editing packages updates only what changed');
   await page.goto(`${BASE}/pdx/bars/57`, { waitUntil: 'networkidle' });
   check((await page.textContent('#row-nba_league_pass')).includes('Confirmed by the site'), 'bar page credits the site');
-  check((await page.textContent('#team-bars'))?.includes("Official supporters' club"), 'bar page shows the official supporters club');
+  check((await page.textContent('#team-bars'))?.includes('Sunderland AFC fans meet here'), 'bar page shows the Sunderland tag');
+  check(!(await page.content()).toLowerCase().includes('official'), 'no "official club" wording anywhere');
   await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
   await page.fill('#q', 'sunderland');
   check((await page.locator('li.bar h2').allTextContents()).join() === 'Garden Tavern', 'searching "sunderland" finds Garden Tavern');

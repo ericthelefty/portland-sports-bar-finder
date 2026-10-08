@@ -39,10 +39,7 @@ export async function saveBar(_prev, formData) {
   );
 
   const keepTeams = new Set(formData.getAll('teamKeep').map(canonicalTeam).filter(Boolean));
-  const officialTeams = new Set(formData.getAll('teamOfficial').map(canonicalTeam));
-  const newTeams = [0, 1]
-    .map((i) => ({ team: canonicalTeam(formData.get(`newTeam_${i}`)), official: formData.get(`newTeamOfficial_${i}`) === 'yes' }))
-    .filter((t) => t.team);
+  const newTeams = [0, 1].map((i) => ({ team: canonicalTeam(formData.get(`newTeam_${i}`)) })).filter((t) => t.team);
 
   const errors = {};
   if (values.name.length < 2) errors.name = 'Enter the bar\'s name.';
@@ -91,17 +88,15 @@ export async function saveBar(_prev, formData) {
                 last_confirmed = excluded.last_confirmed, updated_at = now()`;
       }
     }
-    // Team tags: drop unchecked ones, update the official flag, add new ones.
-    for (const t of await tx`select team, official from bar_teams where bar_id = ${barId}`) {
+    // Team tags: drop unchecked ones, add new ones.
+    for (const t of await tx`select team from bar_teams where bar_id = ${barId}`) {
       if (!keepTeams.has(t.team)) await tx`delete from bar_teams where bar_id = ${barId} and team = ${t.team}`;
-      else if (officialTeams.has(t.team) !== t.official)
-        await tx`update bar_teams set official = ${officialTeams.has(t.team)} where bar_id = ${barId} and team = ${t.team}`;
     }
     for (const t of newTeams) {
       await tx`
-        insert into bar_teams (bar_id, team, official, source, last_confirmed)
-        values (${barId}, ${t.team}, ${t.official}, 'admin', ${today()})
-        on conflict (bar_id, team) do update set official = excluded.official, last_confirmed = excluded.last_confirmed`;
+        insert into bar_teams (bar_id, team, source, last_confirmed)
+        values (${barId}, ${t.team}, 'admin', ${today()})
+        on conflict (bar_id, team) do update set last_confirmed = excluded.last_confirmed`;
     }
   });
   revalidatePath('/', 'layout');

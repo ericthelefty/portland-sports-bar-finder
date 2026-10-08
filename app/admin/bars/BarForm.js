@@ -156,10 +156,6 @@ export default function BarForm({ bar }) {
                   <input type="checkbox" name="teamKeep" value={t.team} id={`team-keep-${i}`} defaultChecked />
                   <strong>{t.team}</strong>
                 </label>
-                <label className="check">
-                  <input type="checkbox" name="teamOfficial" value={t.team} id={`team-official-${i}`} defaultChecked={t.official} />
-                  Official supporters' club
-                </label>
                 <span className="small">
                   {SOURCE_LABELS[t.source] ?? t.source}
                   {t.lastConfirmed ? `, ${formatDate(t.lastConfirmed)}` : ''}
@@ -181,10 +177,6 @@ export default function BarForm({ bar }) {
                 aria-label="Add a team"
                 defaultValue={newTeams[i]?.team}
               />
-              <label className="check">
-                <input type="checkbox" name={`newTeamOfficial_${i}`} value="yes" id={`newTeamOfficial_${i}`} defaultChecked={newTeams[i]?.official} />
-                Official supporters' club
-              </label>
             </li>
           ))}
         </ul>
