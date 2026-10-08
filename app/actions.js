@@ -9,6 +9,7 @@ import { PACKAGE_KEYS, RELATIONS, AREAS } from '@/lib/constants';
 import { verifyCaptcha } from '@/lib/captcha';
 import { isAdmin, passwordMatches, startSession, endSession } from '@/lib/auth';
 import { getCity, DEFAULT_CITY, cityPath } from '@/lib/cities';
+import { canonicalTeam } from '@/lib/teams';
 
 const MAX_REPORTS_PER_HOUR = 6;
 
@@ -26,8 +27,8 @@ export async function submitReport(_prev, formData) {
   const city = getCity(clean(formData.get('city'), 20))?.slug ?? DEFAULT_CITY;
   const thanks = cityPath(city, '/report/thanks');
   const values = Object.fromEntries(
-    ['barId', 'newBarName', 'newBarAddress', 'newBarArea', 'relation', 'seenOn', 'link', 'note', 'otherPackage'].map(
-      (k) => [k, clean(formData.get(k), k === 'note' ? 1000 : 300)]
+    ['barId', 'newBarName', 'newBarAddress', 'newBarArea', 'relation', 'seenOn', 'link', 'note', 'otherPackage', 'team'].map(
+      (k) => [k, clean(formData.get(k), k === 'note' ? 1000 : k === 'team' ? 60 : 300)]
     )
   );
   const has = formData.getAll('has').filter((k) => PACKAGE_KEYS.includes(k));
@@ -44,8 +45,8 @@ export async function submitReport(_prev, formData) {
   if (addingBar && values.newBarName.length < 2) errors.newBarName = "Enter the bar's name.";
   if (addingBar && values.newBarAddress.length < 5) errors.newBarAddress = "Enter the bar's street address.";
   if (addingBar && values.newBarArea && !AREAS.includes(values.newBarArea)) errors.newBarArea = 'Choose an area.';
-  if (!has.length && !not.length && !values.otherPackage && !addingBar)
-    errors.has = 'Check at least one package the bar has, or one it doesn\'t have.';
+  if (!has.length && !not.length && !values.otherPackage && !values.team && !addingBar)
+    errors.has = 'Check at least one package the bar has or doesn\'t have, or name a team below.';
   if (!RELATIONS.some((r) => r.key === values.relation)) errors.relation = 'Tell us how you know.';
   if (values.seenOn && !/^\d{4}-\d{2}-\d{2}$/.test(values.seenOn)) errors.seenOn = 'Enter a valid date.';
   if (values.seenOn && new Date(values.seenOn) > new Date(Date.now() + 86400000)) errors.seenOn = "The date can't be in the future.";
@@ -70,10 +71,10 @@ export async function submitReport(_prev, formData) {
 
   await sql`
     insert into reports (bar_id, new_bar_name, new_bar_address, new_bar_area, has_packages, not_packages, other_package,
-                         relation, seen_on, link, note, email, ip_hash)
+                         team, relation, seen_on, link, note, email, ip_hash)
     values (${barId}, ${addingBar ? values.newBarName : ''}, ${addingBar ? values.newBarAddress : ''},
             ${addingBar ? values.newBarArea : ''}, ${has.join(',')}, ${not.join(',')}, ${values.otherPackage},
-            ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, '', ${ipHash})`;
+            ${canonicalTeam(values.team)}, ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, '', ${ipHash})`;
   redirect(thanks);
 }
 
@@ -126,6 +127,13 @@ export async function approveReport(formData) {
               last_confirmed = excluded.last_confirmed, updated_at = now()`;
       for (const pkg of (r.has_packages || '').split(',').filter(Boolean)) await upsert(pkg, 'has');
       for (const pkg of (r.not_packages || '').split(',').filter(Boolean)) await upsert(pkg, 'not');
+      const team = canonicalTeam(r.team);
+      if (team) {
+        await tx`
+          insert into bar_teams (bar_id, team, source, last_confirmed)
+          values (${barId}, ${team}, ${source}, ${confirmed})
+          on conflict (bar_id, team) do update set last_confirmed = excluded.last_confirmed`;
+      }
     }
     await tx`update reports set status = 'approved', reviewed_at = now() where id = ${id}`;
   });

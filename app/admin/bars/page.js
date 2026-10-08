@@ -61,6 +61,7 @@ export default async function ManageBars({ searchParams }) {
           address: shortAddress(b.address),
           active: b.active,
           hasCount: b.has_count,
+          teams: b.teams,
         }))}
       />
     </>

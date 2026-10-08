@@ -130,6 +130,16 @@ export default async function AdminPage() {
               {relationLabel(r.relation)}
               {r.seenOn ? ` · seen ${formatDate(r.seenOn)}` : ''} · sent {formatDate(r.createdAt)}
             </div>
+            {r.team && (
+              <div className="small" id={`team-${r.id}`}>
+                Team bar for: <strong>{r.team}</strong>
+                {r.currentTeams?.some((t) => t.team === r.team)
+                  ? ' (already tagged)'
+                  : r.currentTeams?.length
+                    ? ` (now tagged: ${r.currentTeams.map((t) => t.team).join(', ')})`
+                    : ' (added when you approve)'}
+              </div>
+            )}
             {r.otherPackage && (
               <div className="small">
                 Other package mentioned: <strong>{r.otherPackage}</strong> (not added automatically)
@@ -189,8 +199,11 @@ export default async function AdminPage() {
                   <tr key={r.id}>
                     <td>{r.barName || r.newBarName}</td>
                     <td>
-                      {[...r.has.map((k) => `+ ${packageLabel(k)}`), ...r.not.map((k) => `− ${packageLabel(k)}`)].join(', ') ||
-                        'New bar'}
+                      {[
+                        ...r.has.map((k) => `+ ${packageLabel(k)}`),
+                        ...r.not.map((k) => `− ${packageLabel(k)}`),
+                        ...(r.team ? [`Team: ${r.team}`] : []),
+                      ].join(', ') || 'New bar'}
                     </td>
                     <td>
                       {r.status === 'approved' ? 'Approved' : 'Rejected'}

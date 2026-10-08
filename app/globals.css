@@ -132,6 +132,14 @@ ul.bars li { border-bottom: 1px solid var(--line); }
 .tag.not { background: transparent; color: var(--muted); text-decoration: line-through; border: 1px solid var(--line); }
 .tag.unk { background: transparent; color: var(--muted); border: 1px dashed var(--line); font-weight: 500; }
 .tag.fan::after { content: ' · fan'; font-weight: 500; opacity: 0.8; }
+.tag.team { background: var(--warn-soft); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+.tag.team.hit { background: var(--warn); color: var(--bg); border-color: var(--warn); }
+.bar .teams { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.team-box { margin-top: 18px; padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 8px; background: var(--surface); display: grid; gap: 10px; }
+.team-line { display: grid; gap: 4px; justify-items: start; }
+.team-edit { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.team-edit li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; }
+.team-edit li input[type='text'] { flex: 1 1 240px; }
 .empty { padding: 32px 4px; color: var(--muted); }
 
 /* Bar page */

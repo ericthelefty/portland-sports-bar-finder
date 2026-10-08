@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { submitReport } from '@/app/actions';
 import BarPicker from './BarPicker';
+import TeamOptions from '@/app/TeamOptions';
 import { PACKAGES, RELATIONS, AREAS } from '@/lib/constants';
 
 function Err({ msg, id }) {
@@ -147,6 +148,26 @@ export default function ReportForm({ bars, initial, captchaSiteKey, city }) {
           ))}
         </div>
       </details>
+
+      <fieldset>
+        <label className="field-label" htmlFor="team">
+          Is this a bar for fans of one team? (optional)
+        </label>
+        <p className="hint" id="team-hint">
+          For a bar known as a team's home for games, like a Browns bar or a supporters' club bar.
+        </p>
+        <input
+          id="team"
+          name="team"
+          type="text"
+          list="team-list"
+          autoComplete="off"
+          aria-describedby="team-hint"
+          placeholder="e.g. Cleveland Browns, Sunderland AFC"
+          defaultValue={v.team}
+        />
+        <TeamOptions />
+      </fieldset>
 
       <fieldset>
         <legend>How do you know?</legend>

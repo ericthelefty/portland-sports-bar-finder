@@ -121,6 +121,7 @@ try {
   check((await page.inputValue('#barSearch')) === 'Kooks (N)', 'report link fills in the bar');
   await page.check('#rel-saw');
   await page.fill('#seenOn', '2026-09-20');
+  await page.fill('#team', 'cleveland browns');
   await captchaReady();
   await page.screenshot({ path: `${SHOTS}/report-filled.png`, fullPage: true });
   await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
@@ -197,6 +198,8 @@ try {
   await page.waitForTimeout(800);
   const [kooks] = await sql`select status, source from bar_packages where bar_id = 64 and package = 'nhl_center_ice'`;
   check(kooks?.status === 'has' && kooks?.source === 'fan', 'approving adds NHL Center Ice to Kooks as a fan report');
+  const [kooksTeam] = await sql`select team, source from bar_teams where bar_id = 64`;
+  check(kooksTeam?.team === 'Cleveland Browns' && kooksTeam?.source === 'fan', 'approving tags Kooks as a Cleveland Browns bar (standard spelling)');
 
   // Approve report 3 -> new bar is created
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
@@ -222,6 +225,18 @@ try {
   check((await page.locator('li.bar').count()) === 2, 'NHL Center Ice filter now shows 2 bars');
   await page.goto(`${BASE}/pdx/bars/64`, { waitUntil: 'networkidle' });
   check((await page.textContent('#row-nhl_center_ice')).includes('Reported by a fan'), 'Kooks page credits the fan report');
+  check((await page.textContent('#team-bars'))?.includes('Cleveland Browns fans meet here'), 'Kooks page shows it is a Browns bar');
+
+  // Team search: "browns" finds the Browns bar first and highlights its tag
+  await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
+  await page.fill('#q', 'browns');
+  const brownsNames = await page.locator('li.bar h2').allTextContents();
+  check(brownsNames[0] === 'Kooks', `searching "browns" lists Kooks first (${brownsNames.join(', ')})`);
+  check((await page.locator('li.bar .tag.team.hit').count()) === 1, 'the matching team tag is highlighted');
+  await page.fill('#q', 'cleveland brow');
+  check((await page.locator('li.bar h2').first().textContent()) === 'Kooks', 'partial team names work');
+  await page.screenshot({ path: `${SHOTS}/team-search.png`, fullPage: true });
+  await page.fill('#q', '');
 
   // Manage bars: add, edit packages, hide, delete
   await page.goto(`${BASE}/admin/bars`, { waitUntil: 'networkidle' });
@@ -259,12 +274,27 @@ try {
   check((await page.inputValue('#name')) === 'Garden Tavern', 'edit form loads Garden Tavern');
   await page.check('#pkg_mls_season_pass_unknown');
   await page.check('#pkg_nba_league_pass_has');
+  await page.fill('#newTeam_0', 'Sunderland AFC');
+  await page.check('#newTeamOfficial_0');
   await Promise.all([page.waitForURL('**/admin/bars?saved=57'), page.click('#save-bar')]);
+  const [sund] = await sql`select team, official, source from bar_teams where bar_id = 57`;
+  check(sund?.team === 'Sunderland AFC' && sund?.official && sund?.source === 'admin', 'admin can tag a bar with any team as an official club');
   const gt = Object.fromEntries((await sql`select package, source from bar_packages where bar_id = 57`).map((r) => [r.package, r.source]));
   check(!gt.mls_season_pass && gt.nba_league_pass === 'admin' && gt.nfl_sunday_ticket === 'bar_website',
     'editing packages updates only what changed');
   await page.goto(`${BASE}/pdx/bars/57`, { waitUntil: 'networkidle' });
   check((await page.textContent('#row-nba_league_pass')).includes('Confirmed by the site'), 'bar page credits the site');
+  check((await page.textContent('#team-bars'))?.includes("Official supporters' club"), 'bar page shows the official supporters club');
+  await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });
+  await page.fill('#q', 'sunderland');
+  check((await page.locator('li.bar h2').allTextContents()).join() === 'Garden Tavern', 'searching "sunderland" finds Garden Tavern');
+  await page.fill('#q', '');
+  await page.goto(`${BASE}/admin/bars/57`, { waitUntil: 'networkidle' });
+  await page.screenshot({ path: `${SHOTS}/admin-team-tags.png`, fullPage: true });
+  await page.uncheck('#team-keep-0');
+  await Promise.all([page.waitForURL('**/admin/bars?saved=57'), page.click('#save-bar')]);
+  const sundGone = await sql`select team from bar_teams where bar_id = 57`;
+  check(sundGone.length === 0, 'unchecking a team removes the tag');
 
   // Hide the test bar
   await page.goto(`${BASE}/admin/bars/${added.id}`, { waitUntil: 'networkidle' });

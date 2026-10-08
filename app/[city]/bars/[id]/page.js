@@ -60,6 +60,25 @@ export default async function BarPage({ params }) {
         </div>
       </header>
 
+      {bar.teams.length > 0 && (
+        <section className="team-box" id="team-bars" aria-label="Team bar">
+          {bar.teams.map((t) => (
+            <div key={t.team} className="team-line">
+              <span className="tag team">{t.team} bar</span>
+              <span>
+                {t.team} fans meet here for games.
+                {t.official && <strong> Official supporters' club.</strong>}
+              </span>
+              <span className="small mono">
+                {SOURCE_LABELS[t.source] ?? t.source}
+                {t.lastConfirmed ? `, ${formatDate(t.lastConfirmed)}` : ''}
+                {t.lastConfirmed && isStale(t.lastConfirmed) && <span className="stale"> May be out of date</span>}
+              </span>
+            </div>
+          ))}
+        </section>
+      )}
+
       {bar.claimsAll && bar.claimText && (
         <blockquote className="quote">
           {bar.claimText.replace(/\s+—\s+\S+$/, '')}

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { sql, ensureDb } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
 import { PACKAGE_KEYS, AREAS } from '@/lib/constants';
+import { canonicalTeam } from '@/lib/teams';
 
 const clean = (v, max = 300) => String(v ?? '').trim().slice(0, max);
 
@@ -37,6 +38,12 @@ export async function saveBar(_prev, formData) {
     PACKAGE_KEYS.map((k) => [k, ['has', 'not', 'unknown'].includes(formData.get(`pkg_${k}`)) ? formData.get(`pkg_${k}`) : 'unknown'])
   );
 
+  const keepTeams = new Set(formData.getAll('teamKeep').map(canonicalTeam).filter(Boolean));
+  const officialTeams = new Set(formData.getAll('teamOfficial').map(canonicalTeam));
+  const newTeams = [0, 1]
+    .map((i) => ({ team: canonicalTeam(formData.get(`newTeam_${i}`)), official: formData.get(`newTeamOfficial_${i}`) === 'yes' }))
+    .filter((t) => t.team);
+
   const errors = {};
   if (values.name.length < 2) errors.name = 'Enter the bar\'s name.';
   if (values.area && !AREAS.includes(values.area)) errors.area = 'Choose an area.';
@@ -47,7 +54,7 @@ export async function saveBar(_prev, formData) {
       errors[f] = 'That doesn\'t look like a web address.';
     }
   }
-  if (Object.keys(errors).length) return { values: { ...values, pkgs }, errors };
+  if (Object.keys(errors).length) return { values: { ...values, pkgs, newTeams }, errors };
 
   await ensureDb();
   let barId = id;
@@ -83,6 +90,18 @@ export async function saveBar(_prev, formData) {
             set status = excluded.status, source = 'admin', evidence = excluded.evidence,
                 last_confirmed = excluded.last_confirmed, updated_at = now()`;
       }
+    }
+    // Team tags: drop unchecked ones, update the official flag, add new ones.
+    for (const t of await tx`select team, official from bar_teams where bar_id = ${barId}`) {
+      if (!keepTeams.has(t.team)) await tx`delete from bar_teams where bar_id = ${barId} and team = ${t.team}`;
+      else if (officialTeams.has(t.team) !== t.official)
+        await tx`update bar_teams set official = ${officialTeams.has(t.team)} where bar_id = ${barId} and team = ${t.team}`;
+    }
+    for (const t of newTeams) {
+      await tx`
+        insert into bar_teams (bar_id, team, official, source, last_confirmed)
+        values (${barId}, ${t.team}, ${t.official}, 'admin', ${today()})
+        on conflict (bar_id, team) do update set official = excluded.official, last_confirmed = excluded.last_confirmed`;
     }
   });
   revalidatePath('/', 'layout');

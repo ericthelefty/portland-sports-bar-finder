@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { saveBar } from './actions';
 import { PACKAGES, AREAS, SOURCE_LABELS } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
+import TeamOptions from '@/app/TeamOptions';
 
 function Err({ msg }) {
   return msg ? (
@@ -23,6 +24,8 @@ export default function BarForm({ bar }) {
   const pkgValue = (k) => v.pkgs?.[k] ?? current[k]?.status ?? 'unknown';
   const active = v.active ?? bar?.active ?? true;
   const claimsAll = v.claimsAll ?? bar?.claimsAll ?? false;
+  const teams = bar?.teams ?? [];
+  const newTeams = v.newTeams ?? [];
 
   return (
     <form className="report" action={action} noValidate>
@@ -137,6 +140,55 @@ export default function BarForm({ bar }) {
           <input id="claimsAll" name="claimsAll" type="checkbox" value="yes" defaultChecked={claimsAll} />
           <span>Bar says it carries "every package" without naming them</span>
         </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Team bar</legend>
+        <p className="hint">
+          Teams whose fans meet here for games. Searching a team on the site finds these bars first. Uncheck a team to
+          remove it.
+        </p>
+        {teams.length > 0 && (
+          <ul className="team-edit" id="team-edit">
+            {teams.map((t, i) => (
+              <li key={t.team}>
+                <label className="check">
+                  <input type="checkbox" name="teamKeep" value={t.team} id={`team-keep-${i}`} defaultChecked />
+                  <strong>{t.team}</strong>
+                </label>
+                <label className="check">
+                  <input type="checkbox" name="teamOfficial" value={t.team} id={`team-official-${i}`} defaultChecked={t.official} />
+                  Official supporters' club
+                </label>
+                <span className="small">
+                  {SOURCE_LABELS[t.source] ?? t.source}
+                  {t.lastConfirmed ? `, ${formatDate(t.lastConfirmed)}` : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <ul className="team-edit">
+          {[0, 1].map((i) => (
+            <li key={i}>
+              <input
+                type="text"
+                name={`newTeam_${i}`}
+                id={`newTeam_${i}`}
+                list="admin-team-list"
+                autoComplete="off"
+                placeholder={i === 0 ? 'Add a team, e.g. Cleveland Browns' : 'Add another team'}
+                aria-label="Add a team"
+                defaultValue={newTeams[i]?.team}
+              />
+              <label className="check">
+                <input type="checkbox" name={`newTeamOfficial_${i}`} value="yes" id={`newTeamOfficial_${i}`} defaultChecked={newTeams[i]?.official} />
+                Official supporters' club
+              </label>
+            </li>
+          ))}
+        </ul>
+        <TeamOptions id="admin-team-list" />
       </fieldset>
 
       <fieldset>

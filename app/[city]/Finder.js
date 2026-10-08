@@ -5,8 +5,13 @@ import Link from 'next/link';
 import { PACKAGES, AREAS, packageLabel } from '@/lib/constants';
 import { shortAddress } from '@/lib/format';
 import { cityPath } from '@/lib/cities';
+import { norm, searchTerms } from '@/lib/text';
 
 const hasPkg = (bar, key) => bar.packages.some((p) => p.package === key && p.status === 'has');
+
+// Search text for each bar: name, address (with ZIP), type and team tags.
+const haystack = (b) => norm(`${b.name} ${b.address} ${b.type} ${b.teams.map((t) => t.team).join(' ')}`);
+const teamMatches = (team, terms) => terms.length > 0 && terms.every((t) => norm(team).includes(t));
 
 export default function Finder({ bars, city }) {
   const [picked, setPicked] = useState([]);
@@ -19,22 +24,31 @@ export default function Finder({ bars, city }) {
     [bars]
   );
 
+  const terms = useMemo(() => searchTerms(query), [query]);
+  const isTeamBar = (b) => b.teams.some((t) => teamMatches(t.team, terms));
+
   const rows = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const teamBar = (b) => b.teams.some((t) => teamMatches(t.team, terms));
     return bars
       .filter((b) => {
         if (area !== 'all' && b.area !== area) return false;
         if (onlyKnown && !b.packages.some((p) => p.status === 'has')) return false;
         if (!picked.every((k) => hasPkg(b, k))) return false;
-        if (q && !`${b.name} ${b.address} ${b.type}`.toLowerCase().includes(q)) return false;
+        if (terms.length) {
+          const hay = haystack(b);
+          if (!terms.every((t) => hay.includes(t))) return false;
+        }
         return true;
       })
       .sort((x, y) => {
+        // Searching a team puts that team's bars first.
+        const tx = Number(teamBar(x));
+        const ty = Number(teamBar(y));
         const hx = x.packages.filter((p) => p.status === 'has').length;
         const hy = y.packages.filter((p) => p.status === 'has').length;
-        return hy - hx || Number(y.claimsAll) - Number(x.claimsAll) || x.name.localeCompare(y.name);
+        return ty - tx || hy - hx || Number(y.claimsAll) - Number(x.claimsAll) || x.name.localeCompare(y.name);
       });
-  }, [bars, picked, area, query, onlyKnown]);
+  }, [bars, picked, area, terms, onlyKnown]);
 
   const toggle = (key) => setPicked((cur) => (cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]));
   const filterText = [
@@ -82,8 +96,8 @@ export default function Finder({ bars, city }) {
             id="q"
             type="search"
             inputMode="search"
-            placeholder="Search by bar or ZIP code"
-            aria-label="Search by bar or ZIP code"
+            placeholder="Search by bar, team or ZIP code"
+            aria-label="Search by bar, team or ZIP code"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -127,6 +141,19 @@ export default function Finder({ bars, city }) {
                     {b.type}
                     {b.address ? ` · ${shortAddress(b.address)}` : ''}
                   </div>
+                  {b.teams.length > 0 && (
+                    <div className="teams">
+                      {b.teams.map((t) => (
+                        <span
+                          key={t.team}
+                          className={`tag team${isTeamBar(b) && teamMatches(t.team, terms) ? ' hit' : ''}`}
+                          title={`${t.team} fans meet here for games`}
+                        >
+                          {t.team} bar{t.official ? ' · official club' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div className="pk">
                     {b.packages
                       .filter((p) => p.status === 'has')
