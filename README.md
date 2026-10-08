@@ -12,6 +12,8 @@
 - **Report form** (`/pdx/report`): anyone can report packages a bar has or doesn't have, or add a missing bar. No email needed; a Cloudflare Turnstile check blocks bots.
 - **Review page** (`/admin`): password-protected queue to approve or reject reports, and a Manage bars section to add, edit, hide or delete bars.
 
+- **What's new** (`/changelog`): a list of site changes, linked in the footer. Add an entry to `lib/changelog.js` when a change goes live.
+
 Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. Cities are listed in `lib/cities.js`; adding a second one also needs a city column on the bars table.
 
 ## How it's built

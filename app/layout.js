@@ -58,6 +58,11 @@ export default function RootLayout({ children }) {
                 {CONTACT_EMAIL}
               </a>
             </p>
+            <p className="footer-small">
+              <Link href="/changelog" id="changelog-link">
+                What's new
+              </Link>
+            </p>
           </footer>
         </div>
       </body>

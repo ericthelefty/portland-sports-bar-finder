@@ -63,6 +63,13 @@ h1, h2, h3 { text-wrap: balance; }
 .site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; max-width: 78ch; }
 .site-footer .footer-brand { color: var(--ink); }
 .site-footer .footer-brand b { font: 800 16px/1 var(--display); text-transform: uppercase; letter-spacing: 0; font-kerning: none; }
+.site-footer .footer-small { font-size: 12px; margin-top: 4px; }
+.site-footer .footer-small a { color: var(--muted); }
+.changelog { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 22px; }
+.changelog > li { border-left: 3px solid var(--accent); padding-left: 14px; }
+.changelog > li h2 { margin: 4px 0 6px; }
+.changelog time { color: var(--muted); }
+.changelog ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 
 /* Page headings */
 .hero { padding-block: 28px 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; }
