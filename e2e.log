@@ -1,0 +1,93 @@
+PASS  home lists 82 bars
+PASS  WNBA League Pass filter is shown
+PASS  no bar has WNBA League Pass confirmed yet
+PASS  Sunday Ticket filter shows 6 bars
+PASS  Sunday Ticket + League Pass shows 1 bar
+PASS  SE filter narrows the list (24)
+PASS  search finds Kooks
+PASS  search box says bar, team or ZIP code
+PASS  ZIP search finds bars in 97206 (3)
+PASS  every bar address has a ZIP code (0 missing)
+PASS  city page shows the Oombar tagline
+PASS  city page names Portland
+PASS  page title mentions Oombar (Portland sports bars by TV package · Oombar)
+PASS  logo reads Oombar
+PASS  home page stays on the brand page
+PASS  home page shows the tagline
+PASS  home page explains OOM
+PASS  Portland card shows the bar count
+PASS  footer shows info@oombar.com
+PASS  home title starts with Oombar (Oombar · Out of market, not out of reach.)
+PASS  Portland card opens the finder
+PASS  old bar links redirect to /pdx
+PASS  old report links keep their bar and package
+PASS  an unknown city returns 404
+PASS  footer link opens the changelog
+PASS  privacy page still lives at /privacy
+PASS  bar page shows Garden Tavern
+PASS  Garden Tavern lists Sunday Ticket
+PASS  unknown bar returns 404
+PASS  report form has no email or email-list fields
+PASS  report form offers WNBA League Pass
+PASS  bot check passes and enables the Send button
+PASS  bot check widget is shown
+PASS  empty report shows field errors
+PASS  a report without the bot check is refused
+PASS  the refused report is not stored
+PASS  report link pre-checks the package
+PASS  report link fills in the bar
+PASS  report 1 submitted
+PASS  "Not right?" link pre-checks the doesn't-have box
+PASS  typing "spirit" narrows the list to Spirit of 77 plus "not listed"
+PASS  pressing Enter picks the highlighted bar
+PASS  the list closes after picking
+PASS  search ignores apostrophes and capitals
+PASS  typing again clears the earlier choice
+PASS  no-match message appears
+PASS  with no match, the add option uses what was typed
+PASS  pressing Enter with no match picks "add a new bar"
+PASS  the new bar name is filled in from the search
+PASS  honeypot report is not stored
+PASS  no email addresses are stored
+PASS  the old email-list download is gone
+PASS  admin shows no reports before sign-in
+PASS  wrong password is refused
+PASS  admin shows 3 pending reports
+PASS  admin does not warn about the bot check when it is on
+PASS  approving adds NHL Center Ice to Kooks as a fan report
+PASS  approving tags Kooks as a Cleveland Browns bar (standard spelling)
+PASS  approving a new-bar report adds the bar with its package
+PASS  rejecting a dispute leaves the listing unchanged
+PASS  queue is empty after review
+PASS  NHL Center Ice filter now shows 2 bars
+PASS  Kooks page credits the fan report
+PASS  Kooks page shows it is a Browns bar
+PASS  searching "browns" lists Kooks first (Kooks)
+PASS  the matching team tag is highlighted
+PASS  partial team names work
+PASS  Manage bars lists all 83 bars
+PASS  Manage bars search finds Garden Tavern
+PASS  adding a bar without a name shows an error
+PASS  new bar saved with area and website
+PASS  new bar has NBA League Pass marked by the site
+PASS  admin can mark WNBA League Pass
+PASS  new bar appears in the NBA League Pass filter
+PASS  edit form loads Garden Tavern
+PASS  typed club names save as the standard name (Manchester United, Sunderland)
+PASS  editing packages updates only what changed
+PASS  bar page credits the site
+PASS  bar page shows the Sunderland tag
+PASS  no "official club" wording anywhere
+PASS  searching "sunderland" finds Garden Tavern
+PASS  searching a nickname ("red devils") finds the Man United bar
+PASS  searching "spurs" shows no team bars when none are tagged
+PASS  unchecking a team removes the tag
+PASS  a hidden bar is not shown on the site
+PASS  home lists 83 bars with the test bar hidden
+PASS  deleting removes the bar
+PASS  edit page asks for the password when signed out
+PASS  no sideways scrolling on the home page on a phone
+PASS  no sideways scrolling on a phone
+PASS  no browser errors
+
+All checks passed

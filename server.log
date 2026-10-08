@@ -1,0 +1,13 @@
+
+> portland-sports-bar-finder@1.0.0 start
+> next start
+
+▲ Next.js 16.3.7
+- Local:         http://localhost:3000
+- Network:       http://10.1.0.108:3000
+✓ Ready in 132ms
+✓ Running next.config.mjs took 16ms
+⨯ TypeError: Cannot read properties of null (reading 'full')
+    at g (.next/server/chunks/ssr/[root-of-the-server]__1zhokv_._.js:1:1364) {
+  digest: '3537069511'
+}
