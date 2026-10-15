@@ -41,7 +41,7 @@ You don't need to create any tables. The site does that itself the first time it
    | Name | Value |
    |---|---|
    | `DATABASE_URL` | The finished connection string from Step 1 |
-   | `ADMIN_PASSWORD` | A password you'll use to open the review page. At least 8 characters, and different from the database password. |
+   | `ADMIN_PASSWORD` | A password you'll use to open the review page. Use a long, unique password that's different from the database password. A password manager can make one for you. |
 
 6. Click **Deploy**. After a minute or two you'll see a preview of the site and a web address like `portland-sports-bar-finder.vercel.app`.
 7. Open the site. The first visit takes a few extra seconds while it sets up the database. You should see 82 bars.
@@ -117,6 +117,6 @@ Email forwarding doesn't touch the website records you added for Vercel, so the 
 ## If something goes wrong
 
 - **The site shows "Application error" or bars don't load:** `DATABASE_URL` is usually the culprit. Check that you replaced `[YOUR-PASSWORD]` completely (no brackets left), that you used the **Transaction pooler** string, and that the password has no symbols. Fix it in **Settings → Environment Variables**, then redeploy.
-- **The review page says it's locked:** `ADMIN_PASSWORD` is missing or shorter than 8 characters.
+- **The review page says it's locked:** `ADMIN_PASSWORD` is missing or too short. Set a longer one in Vercel and redeploy.
 - **The bot check doesn't appear, or says the site isn't allowed:** check that both Turnstile keys are in Vercel (no spaces), that your site's address is in the widget's **Hostnames** in Cloudflare, and that you redeployed after adding the keys.
 - **You can see the error details** in Vercel under your project → **Logs**. Copy what you see there to Claude.

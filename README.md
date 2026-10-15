@@ -30,7 +30,7 @@ Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. Cities ar
 | Name | Required | Purpose |
 |---|---|---|
 | `DATABASE_URL` | Yes | Supabase "Transaction pooler" connection string |
-| `ADMIN_PASSWORD` | Yes | Password for `/admin` (8+ characters) |
+| `ADMIN_PASSWORD` | Yes | Password for `/admin`. Use a long, unique password |
 | `TURNSTILE_SITE_KEY` | For the bot check | Cloudflare Turnstile site key |
 | `TURNSTILE_SECRET_KEY` | For the bot check | Cloudflare Turnstile secret key |
 | `CONTACT_EMAIL` | No | Shown in the footer and on the privacy page. Defaults to `info@oombar.com` |
