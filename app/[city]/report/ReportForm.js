@@ -6,7 +6,7 @@ import Script from 'next/script';
 import { submitReport } from '@/app/actions';
 import BarPicker from './BarPicker';
 import TeamOptions from '@/app/TeamOptions';
-import { PACKAGES, RELATIONS, AREAS } from '@/lib/constants';
+import { PACKAGES, RELATIONS } from '@/lib/constants';
 
 function Err({ msg, id }) {
   return msg ? (
@@ -74,7 +74,7 @@ export default function ReportForm({ bars, initial, captchaSiteKey, city }) {
         <label className="field-label" htmlFor="barSearch">
           Which bar?
         </label>
-        <BarPicker bars={bars} value={barId} onChange={setBarId} onAddNew={setNewBarName} invalid={Boolean(e.barId)} />
+        <BarPicker placeholder={`Type a bar's name, e.g. ${city.examples.bar}`} bars={bars} value={barId} onChange={setBarId} onAddNew={setNewBarName} invalid={Boolean(e.barId)} />
         <Err msg={e.barId} />
         {barId === 'new' && (
           <div style={{ display: 'grid', gap: 10, marginTop: 6 }}>
@@ -97,7 +97,7 @@ export default function ReportForm({ bars, initial, captchaSiteKey, city }) {
               id="newBarAddress"
               name="newBarAddress"
               type="text"
-              placeholder="e.g. 1234 SE Division St, 97202"
+              placeholder={`e.g. ${city.examples.address}`}
               defaultValue={v.newBarAddress}
             />
             <Err msg={e.newBarAddress} />
@@ -106,9 +106,9 @@ export default function ReportForm({ bars, initial, captchaSiteKey, city }) {
             </label>
             <select id="newBarArea" name="newBarArea" defaultValue={v.newBarArea ?? ''}>
               <option value="">Not sure</option>
-              {AREAS.map((a) => (
-                <option key={a} value={a}>
-                  {a} {city.name}
+              {city.areas.map((a) => (
+                <option key={a.key} value={a.key}>
+                  {a.label}
                 </option>
               ))}
             </select>

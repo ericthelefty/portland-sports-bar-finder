@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { PACKAGES, AREAS, packageLabel } from '@/lib/constants';
+import { PACKAGES, packageLabel } from '@/lib/constants';
 import { shortAddress } from '@/lib/format';
-import { cityPath } from '@/lib/cities';
+import { cityPath, findArea } from '@/lib/cities';
 import { norm, searchTerms } from '@/lib/text';
 import { teamNames } from '@/lib/teams';
 
@@ -56,7 +56,7 @@ export default function Finder({ bars, city }) {
   const toggle = (key) => setPicked((cur) => (cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]));
   const filterText = [
     picked.length ? `with ${picked.map(packageLabel).join(' + ')}` : '',
-    area !== 'all' ? `in ${area} ${city.name}` : '',
+    area !== 'all' ? `in ${findArea(city.slug, area)?.label ?? area}` : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -88,9 +88,15 @@ export default function Finder({ bars, city }) {
             Area
           </span>
           <div className="seg" role="group" aria-labelledby="lbl-area">
-            {['all', ...AREAS].map((a) => (
-              <button key={a} id={`area-${a}`} type="button" aria-pressed={area === a} onClick={() => setArea(a)}>
-                {a === 'all' ? 'All' : a}
+            {[{ key: 'all', short: 'All', label: 'All' }, ...city.areas].map((a) => (
+              <button
+                key={a.key}
+                id={`area-${a.key.replace(/\s+/g, '-')}`}
+                type="button"
+                aria-pressed={area === a.key}
+                onClick={() => setArea(a.key)}
+              >
+                {city.slug === 'pdx' ? a.short : a.label}
               </button>
             ))}
           </div>
@@ -127,7 +133,7 @@ export default function Finder({ bars, city }) {
       {rows.length === 0 ? (
         <p className="empty">
           No bar has confirmed {picked.length ? picked.map(packageLabel).join(' + ') : 'a match'}
-          {area !== 'all' ? ` in ${area} ${city.name}` : ''} yet. Try fewer packages or another area. Bars marked "every
+          {area !== 'all' ? ` in ${findArea(city.slug, area)?.label ?? area}` : ''} yet. Try fewer packages or another area. Bars marked "every
           package" may carry it too.
         </p>
       ) : (
@@ -135,8 +141,8 @@ export default function Finder({ bars, city }) {
           {rows.map((b) => (
             <li key={b.id} className="bar">
               <Link href={cityPath(city.slug, `/bars/${b.id}`)} className="bar-row">
-                <span className="area" aria-label={`Area ${b.area || 'unknown'}`}>
-                  {b.area || '—'}
+                <span className="area" title={findArea(city.slug, b.area)?.label} aria-label={`Area ${findArea(city.slug, b.area)?.label ?? 'unknown'}`}>
+                  {findArea(city.slug, b.area)?.short ?? '—'}
                 </span>
                 <div>
                   <h2 className="name">{b.name}</h2>

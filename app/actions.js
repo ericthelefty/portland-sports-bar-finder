@@ -5,10 +5,10 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { sql, ensureDb } from '@/lib/db';
-import { PACKAGE_KEYS, RELATIONS, AREAS } from '@/lib/constants';
+import { PACKAGE_KEYS, RELATIONS } from '@/lib/constants';
 import { verifyCaptcha } from '@/lib/captcha';
 import { isAdmin, passwordMatches, startSession, endSession } from '@/lib/auth';
-import { getCity, DEFAULT_CITY, cityPath } from '@/lib/cities';
+import { getCity, DEFAULT_CITY, cityPath, areaKeys } from '@/lib/cities';
 import { canonicalTeam } from '@/lib/teams';
 
 const MAX_REPORTS_PER_HOUR = 6;
@@ -47,7 +47,7 @@ export async function submitReport(_prev, formData) {
   if (!addingBar && !Number.isInteger(barId)) errors.barId = 'Choose a bar, or pick "My bar isn\'t listed."';
   if (addingBar && values.newBarName.length < 2) errors.newBarName = "Enter the bar's name.";
   if (addingBar && values.newBarAddress.length < 5) errors.newBarAddress = "Enter the bar's street address.";
-  if (addingBar && values.newBarArea && !AREAS.includes(values.newBarArea)) errors.newBarArea = 'Choose an area.';
+  if (addingBar && values.newBarArea && !areaKeys(city).includes(values.newBarArea)) errors.newBarArea = 'Choose an area.';
   if (!has.length && !not.length && !values.otherPackage && !values.team && !addingBar)
     errors.has = 'Check at least one package the bar has or doesn\'t have, or name a team below.';
   if (!RELATIONS.some((r) => r.key === values.relation)) errors.relation = 'Tell us how you know.';
@@ -62,7 +62,7 @@ export async function submitReport(_prev, formData) {
 
   await ensureDb();
   if (!addingBar) {
-    const [bar] = await sql`select id from bars where id = ${barId} and active`;
+    const [bar] = await sql`select id from bars where id = ${barId} and active and city = ${city}`;
     if (!bar) return { ...state, errors: { barId: "We couldn't find that bar. Choose it again from the list." } };
   }
 
@@ -73,9 +73,9 @@ export async function submitReport(_prev, formData) {
     return { ...state, errors: { form: "You've sent several reports in the last hour. Try again later." } };
 
   await sql`
-    insert into reports (bar_id, new_bar_name, new_bar_address, new_bar_area, has_packages, not_packages, other_package,
+    insert into reports (city, bar_id, new_bar_name, new_bar_address, new_bar_area, has_packages, not_packages, other_package,
                          team, relation, seen_on, link, note, email, ip_hash)
-    values (${barId}, ${addingBar ? values.newBarName : ''}, ${addingBar ? values.newBarAddress : ''},
+    values (${city}, ${barId}, ${addingBar ? values.newBarName : ''}, ${addingBar ? values.newBarAddress : ''},
             ${addingBar ? values.newBarArea : ''}, ${has.join(',')}, ${not.join(',')}, ${values.otherPackage},
             ${canonicalTeam(values.team)}, ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, '', ${ipHash})`;
   redirect(thanks);
@@ -121,9 +121,11 @@ export async function approveReport(formData) {
     if (!r) return;
     let barId = r.bar_id;
     if (!barId && r.new_bar_name) {
-      const area = AREAS.includes(newBarArea) ? newBarArea : r.new_bar_area;
+      const areas = areaKeys(r.city);
+      const area = areas.includes(newBarArea) ? newBarArea : areas.includes(r.new_bar_area) ? r.new_bar_area : '';
       const [bar] = await tx`
-        insert into bars (name, address, area, type) values (${r.new_bar_name}, ${r.new_bar_address}, ${area}, 'Bar')
+        insert into bars (city, name, address, area, type)
+        values (${r.city}, ${r.new_bar_name}, ${r.new_bar_address}, ${area}, 'Bar')
         returning id`;
       barId = bar.id;
       await tx`update reports set bar_id = ${barId} where id = ${id}`;

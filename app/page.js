@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic';
 export const metadata = { alternates: { canonical: '/' } };
 
 export default async function Home() {
-  // Bars aren't split by city yet, so every city card shows the one city's numbers.
   const stats = await getCityStats();
   const [first, second] = TAGLINE.split(', ');
   const cities = Object.values(CITIES);
@@ -35,18 +34,21 @@ export default async function Home() {
           Pick your city
         </h2>
         <ul className="city-cards">
-          {cities.map((c) => (
+          {cities.map((c) => {
+            const s = stats[c.slug] ?? { bars: 0, confirmed: 0 };
+            return (
             <li key={c.slug}>
               <Link href={cityPath(c.slug)} className="city-card" id={`city-${c.slug}`}>
                 <span className="city-slug">/{c.slug}</span>
                 <span className="city-name">{c.name}</span>
                 <span className="city-meta">
-                  {stats.bars} bars · {stats.confirmed} with a package confirmed
+                  {s.bars} bars · {s.confirmed > 0 ? `${s.confirmed} with a package confirmed` : 'New: help us confirm packages'}
                 </span>
                 <span className="city-go">Find a bar →</span>
               </Link>
             </li>
-          ))}
+            );
+          })}
           <li className="city-soon" aria-label="More cities coming">
             <span className="city-name">More cities soon</span>
             <span className="city-meta">Starting where the out-of-market fans are.</span>

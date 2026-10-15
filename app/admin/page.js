@@ -3,11 +3,11 @@ import { isAdmin, adminConfigured } from '@/lib/auth';
 import { getPendingReports, getRecentReviewed, getCounts } from '@/lib/data';
 import { captchaEnabled } from '@/lib/captcha';
 import { approveReport, rejectReport, adminLogout } from '@/app/actions';
-import { packageLabel, relationLabel, AREAS } from '@/lib/constants';
+import { packageLabel, relationLabel } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
 import LoginForm from './LoginForm';
 import AdminNav from './AdminNav';
-import { DEFAULT_CITY, cityPath } from '@/lib/cities';
+import { cityPath, getCity } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Review reports', robots: { index: false, follow: false } };
@@ -80,7 +80,7 @@ export default async function AdminPage() {
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <h3 id={`rh-${r.id}`}>
                 {r.barId ? (
-                  <Link href={cityPath(DEFAULT_CITY, `/bars/${r.barId}`)} target="_blank">
+                  <Link href={cityPath(r.city, `/bars/${r.barId}`)} target="_blank">
                     {r.barName}
                   </Link>
                 ) : (
@@ -88,6 +88,9 @@ export default async function AdminPage() {
                 )}
               </h3>
               <div className="row">
+                <span className="flag plain" id={`city-${r.id}`}>
+                  {getCity(r.city)?.name ?? r.city}
+                </span>
                 {!r.barId && <span className="flag plain">New bar</span>}
                 {r.not.map((k) => (
                   <span className="flag" key={k}>
@@ -160,9 +163,9 @@ export default async function AdminPage() {
                 {!r.barId && (
                   <select name="newBarArea" defaultValue={r.newBarArea} aria-label="Area for the new bar" style={{ width: 'auto' }}>
                     <option value="">Area unknown</option>
-                    {AREAS.map((a) => (
-                      <option key={a} value={a}>
-                        {a}
+                    {(getCity(r.city)?.areas ?? []).map((a) => (
+                      <option key={a.key} value={a.key}>
+                        {a.label}
                       </option>
                     ))}
                   </select>

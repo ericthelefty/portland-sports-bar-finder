@@ -16,7 +16,7 @@ const norm = (s) =>
 const labelFor = (bar) => (bar ? `${bar.name}${bar.area ? ` (${bar.area})` : ''}` : '');
 
 // A type-to-search bar picker. Submits the chosen bar's id as `name`.
-export default function BarPicker({ bars, value, onChange, onAddNew, name = 'barId', invalid = false }) {
+export default function BarPicker({ bars, value, onChange, onAddNew, name = 'barId', invalid = false, placeholder }) {
   const uid = useId();
   const listId = `${uid}-list`;
   const selected = bars.find((b) => String(b.id) === String(value));
@@ -95,7 +95,7 @@ export default function BarPicker({ bars, value, onChange, onAddNew, name = 'bar
         aria-activedescendant={open && options[active] ? `${uid}-opt-${options[active].id}` : undefined}
         aria-invalid={invalid || undefined}
         autoComplete="off"
-        placeholder="Type a bar's name, e.g. Spirit of 77"
+        placeholder={placeholder}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);

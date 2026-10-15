@@ -5,7 +5,7 @@ import { shortAddress } from '@/lib/format';
 import AdminNav from '../AdminNav';
 import LoginForm from '../LoginForm';
 import BarTable from './BarTable';
-import { DEFAULT_CITY, cityPath } from '@/lib/cities';
+import { cityPath, getCity } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Manage bars', robots: { index: false, follow: false } };
@@ -32,7 +32,7 @@ export default async function ManageBars({ searchParams }) {
       {saved && (
         <p className="notice" role="status" id="saved-notice">
           Saved {saved.name}.{' '}
-          {saved.active && <Link href={cityPath(DEFAULT_CITY, `/bars/${saved.id}`)}>View it on the site</Link>}
+          {saved.active && <Link href={cityPath(saved.city, `/bars/${saved.id}`)}>View it on the site</Link>}
         </p>
       )}
       {sp?.deleted && (
@@ -56,6 +56,7 @@ export default async function ManageBars({ searchParams }) {
       <BarTable
         bars={bars.map((b) => ({
           id: b.id,
+          city: getCity(b.city)?.name ?? b.city,
           name: b.name,
           area: b.area,
           address: shortAddress(b.address),

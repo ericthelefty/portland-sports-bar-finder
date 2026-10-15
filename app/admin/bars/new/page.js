@@ -3,11 +3,13 @@ import { isAdmin } from '@/lib/auth';
 import AdminNav from '../../AdminNav';
 import LoginForm from '../../LoginForm';
 import BarForm from '../BarForm';
+import { getCity } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Add a bar', robots: { index: false, follow: false } };
 
-export default async function NewBar() {
+export default async function NewBar({ searchParams }) {
+  const sp = await searchParams;
   if (!(await isAdmin())) {
     return (
       <>
@@ -25,7 +27,7 @@ export default async function NewBar() {
         Add a bar
       </h1>
       <AdminNav current="bars" />
-      <BarForm bar={null} />
+      <BarForm bar={null} defaultCity={getCity(sp?.city)?.slug} />
     </>
   );
 }

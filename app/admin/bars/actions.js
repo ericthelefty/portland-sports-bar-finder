@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { sql, ensureDb } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
-import { PACKAGE_KEYS, AREAS } from '@/lib/constants';
+import { PACKAGE_KEYS } from '@/lib/constants';
+import { getCity, areaKeys } from '@/lib/cities';
 import { canonicalTeam } from '@/lib/teams';
 
 const clean = (v, max = 300) => String(v ?? '').trim().slice(0, max);
@@ -23,6 +24,7 @@ export async function saveBar(_prev, formData) {
   if (!(await isAdmin())) redirect('/admin');
   const id = formData.get('id') ? Number(formData.get('id')) : null;
   const values = {
+    city: clean(formData.get('city'), 10),
     name: clean(formData.get('name'), 120),
     type: clean(formData.get('type'), 60),
     area: clean(formData.get('area'), 4),
@@ -43,7 +45,8 @@ export async function saveBar(_prev, formData) {
 
   const errors = {};
   if (values.name.length < 2) errors.name = 'Enter the bar\'s name.';
-  if (values.area && !AREAS.includes(values.area)) errors.area = 'Choose an area.';
+  if (!getCity(values.city)) errors.city = 'Choose a city.';
+  if (values.area && !areaKeys(values.city).includes(values.area)) errors.area = 'Choose an area in this city.';
   for (const f of ['website', 'facebook', 'instagram']) {
     try {
       if (values[f]) new URL(values[f]);
@@ -58,15 +61,15 @@ export async function saveBar(_prev, formData) {
   await sql.begin(async (tx) => {
     if (barId) {
       const updated = await tx`
-        update bars set name = ${values.name}, type = ${values.type}, area = ${values.area}, address = ${values.address},
+        update bars set city = ${values.city}, name = ${values.name}, type = ${values.type}, area = ${values.area}, address = ${values.address},
           website = ${values.website}, facebook = ${values.facebook}, instagram = ${values.instagram},
           notes = ${values.notes}, active = ${values.active}, claims_all_packages = ${values.claimsAll}
         where id = ${barId} returning id`;
       if (!updated.length) throw new Error('Bar not found');
     } else {
       const [row] = await tx`
-        insert into bars (name, type, area, address, website, facebook, instagram, notes, active, claims_all_packages)
-        values (${values.name}, ${values.type}, ${values.area}, ${values.address}, ${values.website}, ${values.facebook},
+        insert into bars (city, name, type, area, address, website, facebook, instagram, notes, active, claims_all_packages)
+        values (${values.city}, ${values.name}, ${values.type}, ${values.area}, ${values.address}, ${values.website}, ${values.facebook},
                 ${values.instagram}, ${values.notes}, ${values.active}, ${values.claimsAll})
         returning id`;
       barId = row.id;

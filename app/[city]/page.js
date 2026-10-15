@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
 export default async function CityHome({ params }) {
   const city = getCity((await params).city);
   if (!city) notFound();
-  const bars = await getBars();
+  const bars = await getBars(city.slug);
   const confirmed = bars.filter((b) => b.packages.some((p) => p.status === 'has')).length;
   const [first, second] = TAGLINE.split(', ');
   return (

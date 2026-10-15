@@ -1,14 +1,15 @@
 # Oombar
 
-**Out of market, not out of reach.** Oombar ("OOM" is short for out-of-market) helps fans find a sports bar showing their game. Bars are listed by the out-of-market TV packages they carry (NFL Sunday Ticket, NFL RedZone, NBA League Pass, WNBA League Pass, NHL Center Ice, MLB Extra Innings and MLS Season Pass) and by the teams whose fans gather there. It starts with Portland, Oregon.
+**Out of market, not out of reach.** Oombar ("OOM" is short for out-of-market) helps fans find a sports bar showing their game. Bars are listed by the out-of-market TV packages they carry (NFL Sunday Ticket, NFL RedZone, NBA League Pass, WNBA League Pass, NHL Center Ice, MLB Extra Innings and MLS Season Pass) and by the teams whose fans gather there. It covers Portland, Oregon and Salt Lake City, Utah.
 
-**Live site:** [oombar.com](https://oombar.com) · Portland: [oombar.com/pdx](https://oombar.com/pdx) · Questions: info@oombar.com
+**Live site:** [oombar.com](https://oombar.com) · Portland: [oombar.com/pdx](https://oombar.com/pdx) · Salt Lake City: [oombar.com/slc](https://oombar.com/slc) · Questions: info@oombar.com
 
 **To put the site online, follow [SETUP.md](SETUP.md).** No coding needed.
 
 ## What it does
 
 - **Home** (`/`): the Oombar brand page, with the tagline, what OOM means and a card for each city.
+- **Cities**: each city lives at its own path (`/pdx`, `/slc`) with its own bars and parts of town. Cities and their areas are listed in `lib/cities.js`; every bar and report is saved with its city.
 - **Finder** (`/pdx`): every Portland bar, filtered by package and part of town. Search by bar name, team or ZIP code.
 - **Team bars**: bars tagged as a home for a team's fans, like a Cleveland Browns bar or a Portland Timbers bar. Searching a team lists its bars first, and nicknames work ("Spurs" finds Tottenham Hotspur). Suggested teams cover the NFL, NBA, WNBA, NHL, MLB, MLS, NWSL and Premier League (`lib/teams.js`); any other team can be typed in.
 - **Bar pages** (`/pdx/bars/[id]`): each package's status, where it came from and when it was confirmed, the bar's team tags, and a "Not right?" link.
@@ -16,7 +17,7 @@
 - **Review page** (`/admin`): password-protected queue to approve or reject reports, and a Manage bars section to add, edit, hide or delete bars and their team tags.
 - **What's new** (`/changelog`): a list of site changes, linked in the footer. Add an entry to `lib/changelog.js` when a change goes live.
 
-Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. Cities are listed in `lib/cities.js`; adding a second one also needs a city column on the bars table.
+Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. A city's starting bar list (`data/bars.json` for Portland, `data/bars-slc.json` for Salt Lake City) is loaded once, the first time the site runs with that city.
 
 ## How it's built
 

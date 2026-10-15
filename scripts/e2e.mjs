@@ -79,6 +79,52 @@ try {
   const privacy = await page.request.get(`${BASE}/privacy`);
   check(privacy.status() === 200, 'privacy page still lives at /privacy');
 
+  // Salt Lake City
+  const [{ slcCount }] = await sql`select count(*)::int as "slcCount" from bars where city = 'slc'`;
+  check(slcCount === 32, `Salt Lake City's 32 starting bars are loaded (${slcCount})`);
+  const [{ pdxCount }] = await sql`select count(*)::int as "pdxCount" from bars where city = 'pdx'`;
+  check(pdxCount === 82, `Portland still has its 82 bars (${pdxCount})`);
+  await page.goto(BASE, { waitUntil: 'networkidle' });
+  check((await page.textContent('#city-slc'))?.includes('32 bars'), 'home page has a Salt Lake City card with 32 bars');
+  check((await page.textContent('#city-pdx'))?.includes('82 bars'), 'Portland card still shows 82 bars');
+  await Promise.all([page.waitForURL('**/slc'), page.click('#city-slc')]);
+  check((await page.locator('li.bar').count()) === 32, '/slc lists only Salt Lake City bars');
+  check((await page.textContent('#city-name'))?.includes('Salt Lake City, Utah'), '/slc names Salt Lake City');
+  check((await page.textContent('#nav-city'))?.trim() === 'SLC', 'menu links to SLC while in Salt Lake City');
+  check((await page.getAttribute('.nav-cta', 'href')) === '/slc/report', 'report button goes to the SLC form');
+  const [{ sh }] = await sql`select count(*)::int as sh from bars where city = 'slc' and area = 'Sugar House'`;
+  await page.click('#area-Sugar-House');
+  check((await page.locator('li.bar').count()) === sh && sh > 0, `Sugar House filter shows ${sh} bars`);
+  check((await page.textContent('#result-count'))?.includes('in Sugar House'), 'filter text names Sugar House');
+  await page.click('#area-all');
+  await page.fill('#q', 'mammoth');
+  const mammoth = await page.locator('li.bar h2').allTextContents();
+  check(mammoth.length === 2 && mammoth.includes('The Green Pig Pub') && mammoth.includes("Fiddler's"), `searching "mammoth" finds the Mammoth bars (${mammoth.join(', ')})`);
+  await page.fill('#q', '84106');
+  check((await page.locator('li.bar').count()) >= 4, 'ZIP search works in Salt Lake City');
+  await page.fill('#q', '');
+  await page.screenshot({ path: `${SHOTS}/slc-home.png`, fullPage: true });
+  const [slcBar] = await sql`select id from bars where city = 'slc' and name = 'Beer Bar'`;
+  await page.goto(`${BASE}/slc/bars/${slcBar.id}`, { waitUntil: 'networkidle' });
+  check((await page.textContent('h1'))?.includes('Beer Bar'), 'SLC bar page shows Beer Bar');
+  check((await page.textContent('#team-bars'))?.includes('Real Salt Lake fans meet here'), 'Beer Bar is tagged as a Real Salt Lake bar');
+  check((await page.getAttribute('.bar-head .area', 'title')) === 'Downtown', 'SLC bar page shows its area');
+  await page.screenshot({ path: `${SHOTS}/slc-bar-page.png`, fullPage: true });
+  const wrongCity = await page.request.get(`${BASE}/pdx/bars/${slcBar.id}`, { maxRedirects: 0 });
+  check([307, 308].includes(wrongCity.status()) && wrongCity.headers().location?.endsWith(`/slc/bars/${slcBar.id}`), 'an SLC bar under /pdx is sent to /slc');
+  const pdxUnderSlc = await page.request.get(`${BASE}/slc/bars/57`, { maxRedirects: 0 });
+  check(pdxUnderSlc.headers().location?.endsWith('/pdx/bars/57'), 'a Portland bar under /slc is sent to /pdx');
+  await page.goto(`${BASE}/slc/report`, { waitUntil: 'load' });
+  await page.fill('#barSearch', 'green pig');
+  check((await page.locator('[data-option]').first().textContent())?.includes('The Green Pig Pub'), 'SLC report form finds SLC bars');
+  await page.fill('#barSearch', 'kooks');
+  check((await page.locator('[data-option]').count()) === 1 && (await page.textContent('.picker-empty'))?.includes('No bars match'), "SLC report form doesn't list Portland bars");
+  await page.keyboard.press('Enter');
+  check((await page.locator('#newBarArea option[value="Sugar House"]').count()) === 1, 'new-bar area list uses SLC neighborhoods');
+  await page.goto(`${BASE}/privacy`, { waitUntil: 'networkidle' });
+  check((await page.locator('#nav-pdx').count()) === 1 && (await page.locator('#nav-slc').count()) === 1, 'pages outside a city link to both cities');
+  errors.length = 0; // the report page's bot check can log while we leave it mid-load
+
   // Bar page
   await page.goto(`${BASE}/pdx/bars/57`, { waitUntil: 'networkidle' });
   check((await page.textContent('h1'))?.includes('Garden Tavern'), 'bar page shows Garden Tavern');
@@ -243,12 +289,16 @@ try {
 
   // Manage bars: add, edit packages, hide, delete
   await page.goto(`${BASE}/admin/bars`, { waitUntil: 'networkidle' });
-  check((await page.locator('#bar-table tbody tr').count()) === 83, 'Manage bars lists all 83 bars');
+  check((await page.locator('#bar-table tbody tr').count()) === 115, 'Manage bars lists all 115 bars (83 Portland + 32 Salt Lake City)');
   await page.fill('#bar-search', 'garden');
   check((await page.locator('#bar-table tbody tr').count()) === 1, 'Manage bars search finds Garden Tavern');
   await page.screenshot({ path: `${SHOTS}/manage-bars.png`, fullPage: true });
 
   // Add a bar with NBA League Pass
+  await page.goto(`${BASE}/admin/bars/new?city=slc`, { waitUntil: 'networkidle' });
+  check((await page.inputValue('#city')) === 'slc' && (await page.locator('#area option[value="Sugar House"]').count()) === 1, 'Add a bar can start in Salt Lake City with its areas');
+  await page.selectOption('#city', 'pdx');
+  check((await page.locator('#area option[value="NE"]').count()) === 1, 'switching the city switches the area list');
   await page.goto(`${BASE}/admin/bars/new`, { waitUntil: 'networkidle' });
   await page.click('#save-bar');
   await page.waitForSelector('.error');
@@ -339,6 +389,9 @@ try {
   const overflow = await pp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check(!overflow, 'no sideways scrolling on a phone');
   await pp.screenshot({ path: `${SHOTS}/phone-home-dark.png` });
+  await pp.goto(`${BASE}/slc`, { waitUntil: 'networkidle' });
+  check(!(await pp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)), 'no sideways scrolling on /slc on a phone');
+  await pp.screenshot({ path: `${SHOTS}/phone-slc-dark.png`, fullPage: false });
   await pp.goto(`${BASE}/pdx/report?bar=51`, { waitUntil: 'load' });
   await pp.screenshot({ path: `${SHOTS}/phone-report-dark.png`, fullPage: true });
   await pp.goto(`${BASE}/pdx/bars/78`, { waitUntil: 'networkidle' });

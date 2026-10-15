@@ -6,14 +6,14 @@ import Link from 'next/link';
 export default function BarTable({ bars }) {
   const [q, setQ] = useState('');
   const query = q.trim().toLowerCase();
-  const rows = query ? bars.filter((b) => `${b.name} ${b.address} ${b.teams}`.toLowerCase().includes(query)) : bars;
+  const rows = query ? bars.filter((b) => `${b.name} ${b.address} ${b.teams} ${b.city}`.toLowerCase().includes(query)) : bars;
   return (
     <>
       <input
         className="search"
         id="bar-search"
         type="search"
-        placeholder="Find a bar by name, street or team"
+        placeholder="Find a bar by name, street, team or city"
         aria-label="Find a bar"
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -24,6 +24,7 @@ export default function BarTable({ bars }) {
           <thead>
             <tr>
               <th scope="col">Bar</th>
+              <th scope="col">City</th>
               <th scope="col">Area</th>
               <th scope="col">Packages</th>
               <th scope="col">On site</th>
@@ -37,6 +38,7 @@ export default function BarTable({ bars }) {
                   {b.address && <div className="small">{b.address}</div>}
                   {b.teams && <div className="small">Team bar: {b.teams}</div>}
                 </td>
+                <td>{b.city}</td>
                 <td>{b.area || '—'}</td>
                 <td className="mono">{b.hasCount}</td>
                 <td>{b.active ? 'Yes' : <span className="flag plain">Hidden</span>}</td>

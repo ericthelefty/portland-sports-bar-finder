@@ -1,9 +1,10 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { saveBar } from './actions';
-import { PACKAGES, AREAS, SOURCE_LABELS } from '@/lib/constants';
+import { PACKAGES, SOURCE_LABELS } from '@/lib/constants';
+import { CITY_LIST, getCity, DEFAULT_CITY } from '@/lib/cities';
 import { formatDate } from '@/lib/format';
 import TeamOptions from '@/app/TeamOptions';
 
@@ -15,7 +16,7 @@ function Err({ msg }) {
   ) : null;
 }
 
-export default function BarForm({ bar }) {
+export default function BarForm({ bar, defaultCity = DEFAULT_CITY }) {
   const [state, action, pending] = useActionState(saveBar, {});
   const v = state?.values ?? {};
   const e = state?.errors ?? {};
@@ -24,6 +25,8 @@ export default function BarForm({ bar }) {
   const pkgValue = (k) => v.pkgs?.[k] ?? current[k]?.status ?? 'unknown';
   const active = v.active ?? bar?.active ?? true;
   const claimsAll = v.claimsAll ?? bar?.claimsAll ?? false;
+  const [city, setCity] = useState(v.city ?? bar?.city ?? defaultCity);
+  const areas = getCity(city)?.areas ?? [];
   const teams = bar?.teams ?? [];
   const newTeams = v.newTeams ?? [];
 
@@ -39,6 +42,20 @@ export default function BarForm({ bar }) {
         <Err msg={e.name} />
       </fieldset>
 
+      <fieldset>
+        <label className="field-label" htmlFor="city">
+          City
+        </label>
+        <select id="city" name="city" value={city} onChange={(ev) => setCity(ev.target.value)}>
+          {CITY_LIST.map((c) => (
+            <option key={c.slug} value={c.slug}>
+              {c.full}
+            </option>
+          ))}
+        </select>
+        <Err msg={e.city} />
+      </fieldset>
+
       <div className="two">
         <fieldset>
           <label className="field-label" htmlFor="type">
@@ -50,11 +67,11 @@ export default function BarForm({ bar }) {
           <label className="field-label" htmlFor="area">
             Part of town
           </label>
-          <select id="area" name="area" defaultValue={val('area')}>
+          <select id="area" name="area" key={city} defaultValue={city === (bar?.city ?? defaultCity) ? val('area') : ''}>
             <option value="">Not set</option>
-            {AREAS.map((a) => (
-              <option key={a} value={a}>
-                {a} Portland
+            {areas.map((a) => (
+              <option key={a.key} value={a.key}>
+                {a.label}
               </option>
             ))}
           </select>
@@ -66,7 +83,7 @@ export default function BarForm({ bar }) {
         <label className="field-label" htmlFor="address">
           Street address
         </label>
-        <input id="address" name="address" type="text" placeholder="e.g. 1234 SE Division St, Portland, OR 97202" defaultValue={val('address')} />
+        <input id="address" name="address" type="text" placeholder={city === 'slc' ? 'e.g. 123 S Main St, Salt Lake City, UT 84111' : 'e.g. 1234 SE Division St, Portland, OR 97202'} defaultValue={val('address')} />
       </fieldset>
 
       <fieldset>

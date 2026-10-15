@@ -12,7 +12,7 @@ export default async function ReportPage({ params, searchParams }) {
   const city = getCity((await params).city);
   if (!city) notFound();
   const sp = await searchParams;
-  const bars = await getBarOptions();
+  const bars = await getBarOptions(city.slug);
   const barId = bars.some((b) => String(b.id) === sp?.bar) ? sp.bar : '';
   const pick = (v) => (typeof v === 'string' && PACKAGE_KEYS.includes(v) ? [v] : []);
 

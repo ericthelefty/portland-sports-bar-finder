@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getBar } from '@/lib/data';
 import { PACKAGES, SOURCE_LABELS } from '@/lib/constants';
 import { formatDate, isStale, mapsUrl } from '@/lib/format';
-import { cityPath } from '@/lib/cities';
+import { cityPath, getCity, findArea } from '@/lib/cities';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +21,10 @@ export default async function BarPage({ params }) {
   const { id, city } = await params;
   const bar = await getBar(id);
   if (!bar) notFound();
+  // A bar from another city: send people to its right address.
+  if (bar.city !== city) redirect(cityPath(bar.city, `/bars/${bar.id}`));
+  const cityInfo = getCity(city);
+  const area = findArea(city, bar.area);
   const report = (q = '') => cityPath(city, `/report?bar=${bar.id}${q}`);
   const byKey = Object.fromEntries(bar.packages.map((p) => [p.package, p]));
 
@@ -30,7 +34,11 @@ export default async function BarPage({ params }) {
         <Link href={cityPath(city)}>← All bars</Link>
       </p>
       <header className="bar-head">
-        {bar.area && <span className="area">{bar.area}</span>}
+        {area && (
+          <span className="area" title={area.label}>
+            {area.short}
+          </span>
+        )}
         <h1 className="page-title" style={{ marginTop: 4 }}>
           {bar.name}
         </h1>
@@ -54,7 +62,7 @@ export default async function BarPage({ params }) {
               Instagram
             </a>
           )}
-          <a href={mapsUrl(bar.name, bar.address)} target="_blank" rel="noopener noreferrer">
+          <a href={mapsUrl(bar.name, bar.address, `${cityInfo.name}, ${cityInfo.state}`)} target="_blank" rel="noopener noreferrer">
             Directions
           </a>
         </div>

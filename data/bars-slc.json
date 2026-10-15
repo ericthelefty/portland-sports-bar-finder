@@ -1,0 +1,362 @@
+[
+ {
+  "name": "Beer Bar",
+  "type": "Beer hall",
+  "area": "Downtown",
+  "address": "161 E 200 S, Salt Lake City, UT 84111",
+  "website": "https://beerbarslc.com/",
+  "facebook": "",
+  "instagram": "https://www.instagram.com/beerbarslc/",
+  "notes": "",
+  "teams": [
+   "Real Salt Lake"
+  ]
+ },
+ {
+  "name": "Beerhive Pub",
+  "type": "Pub",
+  "area": "Downtown",
+  "address": "128 S Main St, Salt Lake City, UT 84101",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Bewilder Brewing Co",
+  "type": "Brewery",
+  "area": "Downtown",
+  "address": "445 S 400 W, Salt Lake City, UT 84101",
+  "website": "https://bewilderbrewing.com/",
+  "facebook": "https://www.facebook.com/bewilderbeer",
+  "instagram": "https://instagram.com/bewilderbeer",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Big Willies",
+  "type": "Sports bar",
+  "area": "Ballpark",
+  "address": "1717 S Main St, Salt Lake City, UT 84115",
+  "website": "https://bigwilliessportsbar.com/",
+  "facebook": "",
+  "instagram": "https://www.instagram.com/big__willies/",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Bongo Lounge",
+  "type": "Dive bar",
+  "area": "Sugar House",
+  "address": "2965 S Highland Dr, Salt Lake City, UT 84106",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Boomerangs Down Under Bar",
+  "type": "Bar",
+  "area": "Downtown",
+  "address": "160 S Main St, Salt Lake City, UT 84101",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Brewvies Cinema Pub",
+  "type": "Cinema pub",
+  "area": "Downtown",
+  "address": "677 S 200 W, Salt Lake City, UT 84101",
+  "website": "https://brewvies.com/",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Buffalo Wild Wings (Sugar House)",
+  "type": "Sports bar",
+  "area": "Sugar House",
+  "address": "2132 S Highland Dr, Salt Lake City, UT 84106",
+  "website": "https://www.buffalowildwings.com/locations/us/ut/salt-lake-city/2132-south-highland-drive/sports-bar-1401/",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Cheers 2 U",
+  "type": "Dive bar",
+  "area": "Downtown",
+  "address": "315 S Main St, Salt Lake City, UT 84111",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Copper Canyon Grill House & Tavern",
+  "type": "Restaurant & bar",
+  "area": "Downtown",
+  "address": "215 W South Temple, Salt Lake City, UT 84101",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Dave & Buster's",
+  "type": "Arcade & sports bar",
+  "area": "Downtown",
+  "address": "140 S Rio Grande St, Salt Lake City, UT 84101",
+  "website": "https://www.daveandbusters.com/us/en/about/locations/salt-lake-city",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Dick N' Dixie's",
+  "type": "Dive bar",
+  "area": "Central City",
+  "address": "479 E 300 S, Salt Lake City, UT 84111",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Fiddler's",
+  "type": "Sports bar",
+  "area": "Sugar House",
+  "address": "1063 E 2100 S, Salt Lake City, UT 84106",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": [
+   "Utah Mammoth"
+  ]
+ },
+ {
+  "name": "Flanker Kitchen + Sporting Club",
+  "type": "Sports bar",
+  "area": "Downtown",
+  "address": "6 N Rio Grande St Ste 35, Salt Lake City, UT 84101",
+  "website": "https://www.flankerslc.com/",
+  "facebook": "https://www.facebook.com/FlankerSLC-108630384805618/",
+  "instagram": "https://www.instagram.com/flankerslc/",
+  "notes": "",
+  "teams": [
+   "Real Salt Lake"
+  ]
+ },
+ {
+  "name": "Gracie's",
+  "type": "Bar & grill",
+  "area": "Downtown",
+  "address": "326 S West Temple, Salt Lake City, UT 84101",
+  "website": "https://www.graciesslc.com/",
+  "facebook": "http://www.facebook.com/graciesbarslc",
+  "instagram": "https://instagram.com/graciesbar",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "HallPass",
+  "type": "Food hall & bar",
+  "area": "Downtown",
+  "address": "153 S Rio Grande St, Salt Lake City, UT 84101",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Hopkins Brewing Company",
+  "type": "Brewery",
+  "area": "Sugar House",
+  "address": "1048 E 2100 S, Salt Lake City, UT 84106",
+  "website": "https://www.hopkinsbrewingcompany.com/",
+  "facebook": "https://www.facebook.com/hopkinsbrewingco/",
+  "instagram": "https://www.instagram.com/hopkinsbrewingco/",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Legends Pub & Grill",
+  "type": "Sports bar",
+  "area": "Downtown",
+  "address": "677 S 200 W, Salt Lake City, UT 84101",
+  "website": "https://www.whylegends.com/",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Lucky 13",
+  "type": "Bar & grill",
+  "area": "Ballpark",
+  "address": "135 W 1300 S, Salt Lake City, UT 84115",
+  "website": "https://www.lucky13slc.com/",
+  "facebook": "https://www.facebook.com/LUCKY13SLC",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Patrick's Pub",
+  "type": "Pub",
+  "area": "Downtown",
+  "address": "163 W 200 S Ste 101, Salt Lake City, UT 84101",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Paxton Pub",
+  "type": "Pub",
+  "area": "Ballpark",
+  "address": "365 Paxton Ave Unit C, Salt Lake City, UT 84101",
+  "website": "https://www.paxtonpub.com/",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Piper Down Pub",
+  "type": "Pub",
+  "area": "Ballpark",
+  "address": "1492 S State St, Salt Lake City, UT 84115",
+  "website": "https://piperdownpub.com/",
+  "facebook": "https://www.facebook.com/156276823073",
+  "instagram": "https://www.instagram.com/piper_down_pub",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Poplar Street Pub",
+  "type": "Pub",
+  "area": "Downtown",
+  "address": "242 S 200 W, Salt Lake City, UT 84101",
+  "website": "https://poplarstreetpub.com/",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "RoHa Brewing Project",
+  "type": "Brewery",
+  "area": "Ballpark",
+  "address": "30 E Kensington Ave, Salt Lake City, UT 84115",
+  "website": "https://rohabrewing.com/",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Squatters Pub Brewery",
+  "type": "Brewpub",
+  "area": "Downtown",
+  "address": "147 W Broadway, Salt Lake City, UT 84101",
+  "website": "https://www.squatterspubs.com/restaurants/downtown",
+  "facebook": "https://www.facebook.com/SquattersPubs",
+  "instagram": "https://www.instagram.com/squatters.pubs/",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Sugar House Pub",
+  "type": "Pub",
+  "area": "Sugar House",
+  "address": "1994 S 1100 E, Salt Lake City, UT 84106",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "The Black Sheep Bar & Grill",
+  "type": "Bar & grill",
+  "area": "East Bench",
+  "address": "1400 S Foothill Dr #166, Salt Lake City, UT 84108",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "The Break Sports Grill",
+  "type": "Sports bar",
+  "area": "Downtown",
+  "address": "140 S 300 W, Salt Lake City, UT 84101",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "The Bruce Scottish Pub",
+  "type": "Pub",
+  "area": "Downtown",
+  "address": "169 S Rio Grande St, Salt Lake City, UT 84101",
+  "website": "https://www.brucepub.com/",
+  "facebook": "https://www.facebook.com/profile.php?id=61555933029779",
+  "instagram": "https://www.instagram.com/thebrucepub/",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "The Green Pig Pub",
+  "type": "Sports bar",
+  "area": "Downtown",
+  "address": "31 E 400 S, Salt Lake City, UT 84111",
+  "website": "https://thegreenpigpub.com/",
+  "facebook": "https://www.facebook.com/191071620306",
+  "instagram": "https://www.instagram.com/greenpigpub",
+  "notes": "",
+  "teams": [
+   "Utah Mammoth"
+  ]
+ },
+ {
+  "name": "Under Current",
+  "type": "Cocktail bar",
+  "area": "Central City",
+  "address": "270 S 300 E, Salt Lake City, UT 84111",
+  "website": "https://www.undercurrentbar.com/",
+  "facebook": "https://www.facebook.com/pages/Under-Current-Bar/198374007351659",
+  "instagram": "https://www.instagram.com/undercurrentbar/",
+  "notes": "",
+  "teams": []
+ },
+ {
+  "name": "Willie's Lounge",
+  "type": "Dive bar",
+  "area": "Ballpark",
+  "address": "1716 S Main St, Salt Lake City, UT 84115",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "notes": "",
+  "teams": []
+ }
+]
