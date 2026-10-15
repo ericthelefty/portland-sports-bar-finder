@@ -1,9 +1,10 @@
 import Script from 'next/script';
 
-// PostHog web analytics and session replay. Turned on by setting NEXT_PUBLIC_POSTHOG_KEY in Vercel.
+// PostHog web analytics and session replay. Turned on by setting NEXT_PUBLIC_POSTHOG_KEY (or NEXT_PUBLIC_POSTHOG_TOKEN) in Vercel.
 // Traffic goes through this site's own /ingest address (see next.config.mjs) so ad blockers don't drop it.
 export default function Analytics() {
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  // PostHog calls this the "project token" (starts with phc_). Either variable name works.
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || process.env.NEXT_PUBLIC_POSTHOG_TOKEN;
   if (!key) return null;
   const region = process.env.NEXT_PUBLIC_POSTHOG_REGION === 'eu' ? 'eu' : 'us';
   const config = {
