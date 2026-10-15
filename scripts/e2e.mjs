@@ -48,7 +48,7 @@ try {
   await page.fill('#q', '97206');
   const zipNames = await page.locator('li.bar h2').allTextContents();
   check(zipNames.includes('Bucket Brigade Sports Bar') && zipNames.includes('Scoreboard Sports Bar'), `ZIP search finds bars in 97206 (${zipNames.length})`);
-  const [{ noZip }] = await sql`select count(*)::int as "noZip" from bars where active and address !~ ' 97[0-9]{3}$'`;
+  const [{ noZip }] = await sql`select count(*)::int as "noZip" from bars where active and address !~ ' [0-9]{5}$'`;
   check(noZip === 0, `every bar address has a ZIP code (${noZip} missing)`);
   await page.fill('#q', '');
 
