@@ -129,6 +129,7 @@ try {
   await page.goto(`${BASE}/pdx/bars/57`, { waitUntil: 'networkidle' });
   check((await page.textContent('h1'))?.includes('Garden Tavern'), 'bar page shows Garden Tavern');
   check(await page.locator('#row-nfl_sunday_ticket .st.has').isVisible(), 'Garden Tavern lists Sunday Ticket');
+  check((await page.textContent('#website-quote'))?.includes('checked Sept 27, 2026'), "website quote shows the date it was checked");
   await page.screenshot({ path: `${SHOTS}/bar-page.png`, fullPage: true });
   const r404 = await page.goto(`${BASE}/pdx/bars/99999`);
   check(r404.status() === 404, 'unknown bar returns 404');

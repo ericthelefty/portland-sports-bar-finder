@@ -154,12 +154,19 @@ export default async function BarPage({ params }) {
         </table>
       </div>
 
-      {bar.packages.some((p) => p.source === 'bar_website' && p.evidence) && (
-        <blockquote className="quote">
-          {bar.packages.find((p) => p.source === 'bar_website' && p.evidence).evidence.replace(/\s+—\s+\S+$/, '')}
-          <div className="small">From the bar's website, checked Sept 27, 2026</div>
-        </blockquote>
-      )}
+      {(() => {
+        // Quote the bar's own words when its website names a package.
+        const quoted = bar.packages.find((p) => p.source === 'bar_website' && p.evidence);
+        if (!quoted) return null;
+        return (
+          <blockquote className="quote" id="website-quote">
+            {quoted.evidence.replace(/\s+—\s+\S+$/, '')}
+            <div className="small">
+              From the bar's website{quoted.lastConfirmed ? `, checked ${formatDate(quoted.lastConfirmed)}` : ''}
+            </div>
+          </blockquote>
+        );
+      })()}
 
       <p style={{ marginTop: 20 }}>
         <Link href={report()} className="btn primary">
