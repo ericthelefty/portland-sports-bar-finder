@@ -3,6 +3,7 @@ import { Big_Shoulders, Public_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { BRAND, TAGLINE, CONTACT_EMAIL } from '@/lib/cities';
 import { NavLinks, FooterReportLink } from './CityLinks';
+import Analytics from './Analytics';
 
 const display = Big_Shoulders({ subsets: ['latin'], weight: ['600', '800'], variable: '--font-display' });
 const body = Public_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
@@ -59,6 +60,7 @@ export default function RootLayout({ children }) {
             </p>
           </footer>
         </div>
+        <Analytics />
       </body>
     </html>
   );

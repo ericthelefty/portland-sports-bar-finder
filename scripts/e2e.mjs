@@ -78,6 +78,10 @@ try {
   await page.screenshot({ path: `${SHOTS}/changelog.png`, fullPage: true });
   const privacy = await page.request.get(`${BASE}/privacy`);
   check(privacy.status() === 200, 'privacy page still lives at /privacy');
+  check((await privacy.text()).includes('PostHog'), 'privacy page explains the analytics');
+  check((await page.locator('script#posthog').count()) === 0, 'no analytics load when no PostHog key is set');
+  const ingest = await page.request.get(`${BASE}/ingest/static/array.js`);
+  check(ingest.status() === 200 && (await ingest.text()).length > 1000, `PostHog's script loads through the site's own address (${ingest.status()})`);
 
   // Salt Lake City
   const [{ slcCount }] = await sql`select count(*)::int as "slcCount" from bars where city = 'slc'`;

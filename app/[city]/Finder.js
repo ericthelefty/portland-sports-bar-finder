@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PACKAGES, packageLabel } from '@/lib/constants';
 import { shortAddress } from '@/lib/format';
 import { cityPath, findArea } from '@/lib/cities';
 import { norm, searchTerms } from '@/lib/text';
 import { teamNames } from '@/lib/teams';
+import { track } from '@/lib/analytics';
 
 const hasPkg = (bar, key) => bar.packages.some((p) => p.package === key && p.status === 'has');
 
@@ -53,7 +54,18 @@ export default function Finder({ bars, city }) {
       });
   }, [bars, picked, area, terms, onlyKnown]);
 
-  const toggle = (key) => setPicked((cur) => (cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]));
+  const toggle = (key) => {
+    track('package_filter', { city: city.slug, package: key, on: !picked.includes(key) });
+    setPicked((cur) => (cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]));
+  };
+
+  // Record what people search for, once they've paused typing.
+  useEffect(() => {
+    const term = query.trim().toLowerCase();
+    if (term.length < 2) return;
+    const t = setTimeout(() => track('search', { city: city.slug, term, results: rows.length }), 1200);
+    return () => clearTimeout(t);
+  }, [query, rows.length, city.slug]);
   const filterText = [
     picked.length ? `with ${picked.map(packageLabel).join(' + ')}` : '',
     area !== 'all' ? `in ${findArea(city.slug, area)?.label ?? area}` : '',
@@ -94,7 +106,10 @@ export default function Finder({ bars, city }) {
                 id={`area-${a.key.replace(/\s+/g, '-')}`}
                 type="button"
                 aria-pressed={area === a.key}
-                onClick={() => setArea(a.key)}
+                onClick={() => {
+                  track('area_filter', { city: city.slug, area: a.key });
+                  setArea(a.key);
+                }}
               >
                 {city.slug === 'pdx' ? a.short : a.label}
               </button>

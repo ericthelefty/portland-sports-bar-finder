@@ -29,6 +29,14 @@ export default function Privacy() {
         .
       </p>
 
+      <h2>Analytics</h2>
+      <p>
+        We use PostHog to see how the site is used, such as which pages people visit, which packages and teams they
+        search for, and where the site is confusing. Some visits are recorded as a replay of clicks and scrolling so we can
+        fix problems. Anything typed into a form or search box is hidden in those recordings. We don't use advertising
+        cookies, and we don't sell this information.
+      </p>
+
       <h2>What we publish</h2>
       <p>
         If we approve your report, the site shows the package and that it was reported by a fan (or confirmed by the bar, if
