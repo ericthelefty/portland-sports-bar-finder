@@ -344,6 +344,28 @@ try {
   await pp.goto(`${BASE}/pdx/bars/78`, { waitUntil: 'networkidle' });
   await pp.screenshot({ path: `${SHOTS}/phone-bar-dark.png`, fullPage: true });
   await phone.close();
+
+  // Admin sign-in locks after 5 wrong passwords (run last: it locks this test's connection)
+  const lockCtx = await browser.newContext();
+  const lp = await lockCtx.newPage();
+  await lp.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
+  for (let i = 0; i < 5; i++) {
+    await lp.fill('#password', `wrong-${i}`);
+    await Promise.all([lp.waitForResponse((r) => r.request().method() === 'POST'), lp.click('button[type=submit]')]);
+    await lp.waitForSelector('.error');
+  }
+  await lp.fill('#password', 'wrong-again');
+  await Promise.all([lp.waitForResponse((r) => r.request().method() === 'POST'), lp.click('button[type=submit]')]);
+  await lp.waitForFunction(() => document.querySelector('.error')?.textContent.includes('Too many'));
+  check(true, 'sign-in pauses after 5 wrong passwords');
+  await lp.fill('#password', process.env.ADMIN_PASSWORD);
+  await Promise.all([lp.waitForResponse((r) => r.request().method() === 'POST'), lp.click('button[type=submit]')]);
+  await lp.waitForTimeout(500);
+  check((await lp.locator('.report-card, #add-bar, .admin-nav').count()) === 0 && (await lp.locator('#password').count()) === 1, 'even the right password waits out the pause');
+  await lp.screenshot({ path: `${SHOTS}/admin-locked.png`, fullPage: true });
+  const [{ stored }] = await sql`select count(*)::int as stored from admin_login_failures`;
+  check(stored === 5, `failed sign-ins are counted (${stored})`);
+  await lockCtx.close();
 } catch (err) {
   failures++;
   console.log('FAIL  unexpected error:', err?.stack || err);
@@ -351,6 +373,12 @@ try {
 }
 
 const relevant = errors.filter((e) => !/favicon/i.test(e));
+try {
+  const serverLog = (await import('node:fs')).readFileSync('out/server.log', 'utf8');
+  check(!/TypeError|ReferenceError/.test(serverLog), 'server log has no code errors');
+} catch {
+  // No server log when the tests run against another server.
+}
 check(relevant.length === 0, `no browser errors${relevant.length ? ': ' + relevant.join(' | ') : ''}`);
 await browser.close();
 await sql.end();

@@ -1,5 +1,6 @@
 import { getBars } from '@/lib/data';
 import { getCity, TAGLINE } from '@/lib/cities';
+import { notFound } from 'next/navigation';
 import Finder from './Finder';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,7 @@ export async function generateMetadata({ params }) {
 
 export default async function CityHome({ params }) {
   const city = getCity((await params).city);
+  if (!city) notFound();
   const bars = await getBars();
   const confirmed = bars.filter((b) => b.packages.some((p) => p.status === 'has')).length;
   const [first, second] = TAGLINE.split(', ');

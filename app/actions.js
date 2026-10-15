@@ -12,6 +12,9 @@ import { getCity, DEFAULT_CITY, cityPath } from '@/lib/cities';
 import { canonicalTeam } from '@/lib/teams';
 
 const MAX_REPORTS_PER_HOUR = 6;
+// After this many wrong admin passwords from one connection, sign-in is paused for LOGIN_LOCK_MINUTES.
+const MAX_LOGIN_FAILURES = 5;
+const LOGIN_LOCK_MINUTES = 15;
 
 const clean = (v, max = 500) => String(v ?? '').trim().slice(0, max);
 
@@ -79,10 +82,21 @@ export async function submitReport(_prev, formData) {
 }
 
 export async function adminLogin(_prev, formData) {
+  const ipHash = hashIp(await visitorIp());
+  await ensureDb();
+  const [{ failures }] = await sql`
+    select count(*)::int as failures from admin_login_failures
+    where ip_hash = ${ipHash} and created_at > now() - make_interval(mins => ${LOGIN_LOCK_MINUTES})`;
+  if (failures >= MAX_LOGIN_FAILURES) {
+    return { error: `Too many wrong passwords. Try again in ${LOGIN_LOCK_MINUTES} minutes.` };
+  }
   if (!passwordMatches(clean(formData.get('password'), 200))) {
+    await sql`insert into admin_login_failures (ip_hash) values (${ipHash})`;
+    await sql`delete from admin_login_failures where created_at < now() - interval '1 day'`;
     await new Promise((r) => setTimeout(r, 600));
     return { error: "That password isn't right." };
   }
+  await sql`delete from admin_login_failures where ip_hash = ${ipHash}`;
   await startSession();
   redirect('/admin');
 }

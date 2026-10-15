@@ -3,12 +3,14 @@ import { PACKAGE_KEYS } from '@/lib/constants';
 import ReportForm from './ReportForm';
 import { captchaSiteKey } from '@/lib/captcha';
 import { getCity } from '@/lib/cities';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Report a TV package' };
 
 export default async function ReportPage({ params, searchParams }) {
   const city = getCity((await params).city);
+  if (!city) notFound();
   const sp = await searchParams;
   const bars = await getBarOptions();
   const barId = bars.some((b) => String(b.id) === sp?.bar) ? sp.bar : '';
