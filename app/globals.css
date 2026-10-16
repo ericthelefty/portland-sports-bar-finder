@@ -116,6 +116,11 @@ h1, h2, h3 { text-wrap: balance; }
 .seg button { appearance: none; border: 0; background: none; color: var(--ink); font: 600 13px/1 var(--body); padding: 8px 12px; cursor: pointer; border-right: 1px solid var(--line); }
 .seg button:last-child { border-right: 0; }
 .seg button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
+.seg.seg-chips { display: flex; gap: 6px; border: 0; border-radius: 0; overflow: visible; background: none; }
+.seg.seg-chips button { border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.seg.seg-chips button:last-child { border-right: 1px solid var(--line); }
+.seg.seg-chips button:hover { border-color: var(--accent); }
+.seg.seg-chips button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 .search { flex: 1 1 220px; min-width: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 15px var(--body); padding: 9px 12px; border-radius: 8px; }
 .toggle { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
 .toggle input { accent-color: var(--accent); width: 16px; height: 16px; }

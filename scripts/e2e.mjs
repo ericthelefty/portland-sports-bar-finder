@@ -38,6 +38,7 @@ try {
   check((await page.locator('li.bar').count()) === 1, 'Sunday Ticket + League Pass shows 1 bar');
   await page.click('#pk-nfl_sunday_ticket');
   await page.click('#pk-nba_league_pass');
+  check(!(await page.getAttribute('#area-buttons', 'class'))?.includes('seg-chips'), 'Portland keeps its connected area bar');
   await page.click('#area-SE');
   const se = await page.locator('li.bar').count();
   check(se > 5 && se < 82, `SE filter narrows the list (${se})`);
@@ -97,6 +98,7 @@ try {
   check((await page.textContent('#nav-city'))?.trim() === 'SLC', 'menu links to SLC while in Salt Lake City');
   check((await page.getAttribute('.nav-cta', 'href')) === '/slc/report', 'report button goes to the SLC form');
   const [{ sh }] = await sql`select count(*)::int as sh from bars where city = 'slc' and area = 'Sugar House'`;
+  check((await page.getAttribute('#area-buttons', 'class'))?.includes('seg-chips'), 'SLC areas use separate chip buttons');
   await page.click('#area-Sugar-House');
   check((await page.locator('li.bar').count()) === sh && sh > 0, `Sugar House filter shows ${sh} bars`);
   check((await page.textContent('#result-count'))?.includes('in Sugar House'), 'filter text names Sugar House');

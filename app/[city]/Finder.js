@@ -29,6 +29,7 @@ export default function Finder({ bars, city }) {
   );
 
   const terms = useMemo(() => searchTerms(query), [query]);
+  const compactAreas = city.areas.every((a) => a.key.length <= 3);
   const isTeamBar = (b) => b.teams.some((t) => teamMatches(t.team, terms));
 
   const rows = useMemo(() => {
@@ -99,7 +100,8 @@ export default function Finder({ bars, city }) {
           <span className="label" id="lbl-area">
             Area
           </span>
-          <div className="seg" role="group" aria-labelledby="lbl-area">
+          {/* Short area codes (N, NE…) fit a connected button bar; neighborhood names wrap better as separate chips. */}
+          <div className={compactAreas ? 'seg' : 'seg seg-chips'} role="group" aria-labelledby="lbl-area" id="area-buttons">
             {[{ key: 'all', short: 'All', label: 'All' }, ...city.areas].map((a) => (
               <button
                 key={a.key}
@@ -111,7 +113,7 @@ export default function Finder({ bars, city }) {
                   setArea(a.key);
                 }}
               >
-                {city.slug === 'pdx' ? a.short : a.label}
+                {compactAreas ? a.short : a.label}
               </button>
             ))}
           </div>
