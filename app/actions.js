@@ -10,6 +10,8 @@ import { verifyCaptcha } from '@/lib/captcha';
 import { isAdmin, passwordMatches, startSession, endSession } from '@/lib/auth';
 import { getCity, DEFAULT_CITY, cityPath, areaKeys } from '@/lib/cities';
 import { canonicalTeam } from '@/lib/teams';
+import { after } from 'next/server';
+import { emailNewReport } from '@/lib/notify';
 
 const MAX_REPORTS_PER_HOUR = 6;
 // After this many wrong admin passwords from one connection, sign-in is paused for LOGIN_LOCK_MINUTES.
@@ -72,12 +74,34 @@ export async function submitReport(_prev, formData) {
   if (recent >= MAX_REPORTS_PER_HOUR)
     return { ...state, errors: { form: "You've sent several reports in the last hour. Try again later." } };
 
-  await sql`
+  const team = canonicalTeam(values.team);
+  const [saved] = await sql`
     insert into reports (city, bar_id, new_bar_name, new_bar_address, new_bar_area, has_packages, not_packages, other_package,
                          team, relation, seen_on, link, note, email, ip_hash)
     values (${city}, ${barId}, ${addingBar ? values.newBarName : ''}, ${addingBar ? values.newBarAddress : ''},
             ${addingBar ? values.newBarArea : ''}, ${has.join(',')}, ${not.join(',')}, ${values.otherPackage},
-            ${canonicalTeam(values.team)}, ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, '', ${ipHash})`;
+            ${team}, ${values.relation}, ${values.seenOn || null}, ${values.link}, ${values.note}, '', ${ipHash})
+    returning id`;
+  // Email the site owner after the visitor's page has loaded, so it never slows them down.
+  const [bar] = barId ? await sql`select name from bars where id = ${barId}` : [];
+  after(() =>
+    emailNewReport({
+      id: saved.id,
+      city,
+      barName: bar?.name ?? '',
+      newBarName: addingBar ? values.newBarName : '',
+      newBarAddress: addingBar ? values.newBarAddress : '',
+      newBarArea: addingBar ? values.newBarArea : '',
+      has,
+      not,
+      otherPackage: values.otherPackage,
+      team,
+      relation: values.relation,
+      seenOn: values.seenOn,
+      link: values.link,
+      note: values.note,
+    })
+  );
   redirect(thanks);
 }
 

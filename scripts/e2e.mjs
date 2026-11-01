@@ -17,6 +17,21 @@ const check = (cond, msg) => {
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+// A fake email service that records the report emails the site sends.
+const sentEmails = [];
+const inbox = (await import('node:http')).createServer((req, res) => {
+  let body = '';
+  req.on('data', (c) => (body += c));
+  req.on('end', () => {
+    try {
+      sentEmails.push({ auth: req.headers.authorization, ...JSON.parse(body) });
+    } catch {}
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end('{"id":"test"}');
+  });
+});
+await new Promise((r) => inbox.listen(4010, r));
+
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
@@ -182,6 +197,13 @@ try {
   await page.screenshot({ path: `${SHOTS}/report-filled.png`, fullPage: true });
   await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
   check(true, 'report 1 submitted');
+  await page.waitForTimeout(1500);
+  const kooksEmail = sentEmails.find((m) => m.subject?.includes('Kooks'));
+  check(Boolean(kooksEmail), `a report sends an email (${sentEmails.length} sent)`);
+  check(kooksEmail?.subject === 'Report: Kooks (pdx) · + NHL Center Ice, Team: Cleveland Browns', `email subject sums up the report (${kooksEmail?.subject})`);
+  check(kooksEmail?.to?.[0] === 'info@oombar.com' && kooksEmail?.from === 'Oombar <reports@oombar.com>', 'email goes to info@oombar.com from reports@oombar.com');
+  check(kooksEmail?.auth === 'Bearer re_test_key', 'email uses the Resend key');
+  check(/\/admin#report-\d+/.test(kooksEmail?.text ?? ''), 'email links to the report in admin');
 
   // Report 2: dispute Hop Haven's Sunday Ticket
   await page.goto(`${BASE}/pdx/report?bar=46&dispute=nfl_sunday_ticket`, { waitUntil: 'load' });
@@ -227,6 +249,9 @@ try {
   await Promise.all([page.waitForURL('**/report/thanks**'), page.click('#send-report')]);
   const [{ n: botRows }] = await sql`select count(*)::int as n from reports where bar_id = 3`;
   check(botRows === 0, 'honeypot report is not stored');
+  await page.waitForTimeout(1000);
+  check(sentEmails.some((m) => m.subject?.startsWith('New bar: Test Taproom (pdx)')), 'a new-bar report emails with a "New bar" subject');
+  check(sentEmails.length === 3, `one email per real report, none for bots (${sentEmails.length})`);
   const [{ n: emails }] = await sql`select count(*)::int as n from reports where email <> ''`;
   check(emails === 0, 'no email addresses are stored');
 

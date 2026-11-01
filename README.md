@@ -35,6 +35,9 @@ Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. A city's 
 | `TURNSTILE_SITE_KEY` | For the bot check | Cloudflare Turnstile site key |
 | `TURNSTILE_SECRET_KEY` | For the bot check | Cloudflare Turnstile secret key |
 | `CONTACT_EMAIL` | No | Shown in the footer and on the privacy page. Defaults to `info@oombar.com` |
+| `RESEND_API_KEY` | For report emails | Resend API key. When set, every report emails you a summary with a link to review it |
+| `REPORT_EMAIL_TO` | No | Where report emails go. Defaults to `info@oombar.com` |
+| `REPORT_EMAIL_FROM` | No | Who report emails come from. Defaults to `reports@oombar.com` (verify oombar.com in Resend) |
 | `SITE_URL` | No | The site's main address for link previews. Defaults to `https://oombar.com` |
 
 ## Tests
