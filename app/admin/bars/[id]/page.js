@@ -7,6 +7,7 @@ import LoginForm from '../../LoginForm';
 import BarForm from '../BarForm';
 import { deleteBar } from '../actions';
 import { cityPath } from '@/lib/cities';
+import { formatDate } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Edit bar', robots: { index: false, follow: false } };
@@ -40,6 +41,23 @@ export default async function EditBar({ params, searchParams }) {
         {bar.name}
       </h1>
       <AdminNav current="bars" />
+      {sp?.emailed === '1' && bar.emails[0] && (
+        <p className="notice" role="status" id="emailed-notice">
+          Email sent to {bar.emails[0].to}.
+        </p>
+      )}
+      <div className="admin-bar" style={{ maxWidth: 640 }}>
+        <p className="small" id="email-status" style={{ margin: 0 }}>
+          {bar.emails.length
+            ? `Emailed ${formatDate(bar.emails[0].sentOn)}${bar.emails.length > 1 ? ` (${bar.emails.length} emails)` : ''}`
+            : bar.contactEmail
+              ? 'Not emailed yet'
+              : 'No contact email saved'}
+        </p>
+        <Link href={`/admin/bars/${bar.id}/email`} className="btn" id="email-bar">
+          ✉ Email this bar
+        </Link>
+      </div>
       <BarForm bar={bar} />
 
       <details className="more danger-zone" open={sp?.confirm === '1'} style={{ marginTop: 40, maxWidth: 640 }}>

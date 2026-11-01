@@ -395,6 +395,45 @@ try {
   const sundGone = await sql`select team from bar_teams where bar_id = 57`;
   check(sundGone.length === 0, 'unchecking a team removes the tag');
 
+  // Email a bar from admin
+  await page.goto(`${BASE}/admin/bars/57`, { waitUntil: 'networkidle' });
+  check((await page.textContent('#email-status'))?.includes('Not emailed yet'), 'edit page says the bar has not been emailed');
+  await Promise.all([page.waitForURL('**/admin/bars/57/email'), page.click('#email-bar')]);
+  check((await page.inputValue('#to')) === 'manager@gardentavern.example', 'email form starts with the bar\'s private contact email');
+  const draftBody = await page.inputValue('#body');
+  check(draftBody.includes('Hi Garden Tavern team') && draftBody.includes('oombar.com/pdx/bars/57') && draftBody.includes('- WNBA League Pass') && draftBody.includes('Portland fans'),
+    'email draft names the bar, links its page and lists every package');
+  await page.screenshot({ path: `${SHOTS}/admin-email-bar.png`, fullPage: true });
+  const before = sentEmails.length;
+  await page.fill('#subject', 'Quick question about the games you show');
+  await Promise.all([page.waitForURL('**/admin/bars/57?emailed=1'), page.click('#send-email')]);
+  const barMail = sentEmails[before];
+  check(sentEmails.length === before + 1 && barMail?.to?.join() === 'manager@gardentavern.example', 'sending emails the bar');
+  check(barMail?.reply_to === 'info@oombar.com' && barMail?.bcc?.join() === 'info@oombar.com' && barMail?.from === 'Eric from Oombar <info@oombar.com>',
+    `bar email comes from Eric at info@, replies and a copy go to info@ (${barMail?.from})`);
+  check(Boolean(barMail?.text?.includes('Garden Tavern')) && !barMail?.html, 'bar email is plain text like a personal email');
+  check((await page.textContent('#emailed-notice'))?.includes('manager@gardentavern.example'), 'edit page confirms the email was sent');
+  check((await page.textContent('#email-status'))?.startsWith('Emailed '), 'edit page shows when the bar was emailed');
+  const [{ logged }] = await sql`select count(*)::int as logged from bar_emails where bar_id = 57`;
+  check(logged === 1, 'the sent email is recorded');
+  await page.goto(`${BASE}/admin/bars/57/email`, { waitUntil: 'networkidle' });
+  check(await page.isVisible('#emailed-before'), 'email page warns the bar was already emailed');
+  await page.click('#send-email');
+  await page.waitForSelector('.error');
+  check(sentEmails.length === before + 1, 'a second email needs a deliberate check before sending');
+  await page.fill('#to', 'not an email');
+  await page.check('#again');
+  await page.click('#send-email');
+  await page.waitForFunction(() => document.body.textContent.includes("doesn't look like an email"));
+  check(sentEmails.length === before + 1, 'a bad address is caught before sending');
+  await page.goto(`${BASE}/admin/bars`, { waitUntil: 'networkidle' });
+  check((await page.textContent('tr[data-bar="57"]'))?.includes('Emailed '), 'bar list shows which bars were emailed');
+  const emailFresh = await browser.newContext();
+  const ep = await emailFresh.newPage();
+  await ep.goto(`${BASE}/admin/bars/57/email`, { waitUntil: 'networkidle' });
+  check((await ep.locator('#body').count()) === 0 && (await ep.locator('#password').count()) === 1, 'email page asks for the password when signed out');
+  await emailFresh.close();
+
   // Hide the test bar
   await page.goto(`${BASE}/admin/bars/${added.id}`, { waitUntil: 'networkidle' });
   await page.uncheck('#active');

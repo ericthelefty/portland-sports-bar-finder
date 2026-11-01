@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { isAdmin } from '@/lib/auth';
 import { getAllBarsForAdmin } from '@/lib/data';
-import { shortAddress } from '@/lib/format';
+import { shortAddress, formatDate } from '@/lib/format';
 import AdminNav from '../AdminNav';
 import LoginForm from '../LoginForm';
 import BarTable from './BarTable';
@@ -64,6 +64,7 @@ export default async function ManageBars({ searchParams }) {
           hasCount: b.has_count,
           teams: b.teams,
           email: b.contact_email,
+          lastEmailed: b.last_emailed ? formatDate(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(b.last_emailed)) : '',
         }))}
       />
     </>

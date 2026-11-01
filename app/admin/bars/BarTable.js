@@ -37,7 +37,12 @@ export default function BarTable({ bars }) {
                   <Link href={`/admin/bars/${b.id}`}>{b.name}</Link>
                   {b.address && <div className="small">{b.address}</div>}
                   {b.teams && <div className="small">Team bar: {b.teams}</div>}
-                  {b.email && <div className="small">✉ {b.email}</div>}
+                  {b.email && (
+                    <div className="small">
+                      ✉ {b.email}
+                      {b.lastEmailed ? ` · Emailed ${b.lastEmailed}` : ''}
+                    </div>
+                  )}
                 </td>
                 <td>{b.city}</td>
                 <td>{b.area || '—'}</td>
