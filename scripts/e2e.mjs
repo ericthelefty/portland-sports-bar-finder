@@ -359,9 +359,12 @@ try {
   check((await page.inputValue('#name')) === 'Garden Tavern', 'edit form loads Garden Tavern');
   await page.check('#pkg_mls_season_pass_unknown');
   await page.check('#pkg_nba_league_pass_has');
+  await page.fill('#contactEmail', 'Manager@GardenTavern.example');
   await page.fill('#newTeam_0', 'Sunderland AFC');
   await page.fill('#newTeam_1', 'man utd');
   await Promise.all([page.waitForURL('**/admin/bars?saved=57'), page.click('#save-bar')]);
+  const [gtEmail] = await sql`select contact_email from bars where id = 57`;
+  check(gtEmail?.contact_email === 'manager@gardentavern.example', 'admin can save a private contact email');
   const gtTeams = (await sql`select team, source from bar_teams where bar_id = 57 order by team`).map((r) => r.team);
   check(gtTeams.join() === 'Manchester United,Sunderland', `typed club names save as the standard name (${gtTeams.join(', ')})`);
   const gt = Object.fromEntries((await sql`select package, source from bar_packages where bar_id = 57`).map((r) => [r.package, r.source]));
@@ -369,6 +372,9 @@ try {
     'editing packages updates only what changed');
   await page.goto(`${BASE}/pdx/bars/57`, { waitUntil: 'networkidle' });
   check((await page.textContent('#row-nba_league_pass')).includes('Confirmed by the site'), 'bar page credits the site');
+  check(!(await page.content()).toLowerCase().includes('gardentavern.example'), 'the contact email never appears on the public bar page');
+  const finderHtml = await (await page.request.get(`${BASE}/pdx`)).text();
+  check(!finderHtml.includes('gardentavern.example'), 'the contact email never appears on the city page');
   check((await page.textContent('#team-bars'))?.includes('Sunderland fans meet here'), 'bar page shows the Sunderland tag');
   check(!(await page.content()).toLowerCase().includes('official'), 'no "official club" wording anywhere');
   await page.goto(`${BASE}/pdx`, { waitUntil: 'networkidle' });

@@ -201,6 +201,15 @@ export default function BarForm({ bar, defaultCity = DEFAULT_CITY }) {
       </fieldset>
 
       <fieldset>
+        <label className="field-label" htmlFor="contactEmail">
+          Contact email (private)
+        </label>
+        <p className="hint">For asking the bar to confirm its packages. Only you see this; it's never shown on the site.</p>
+        <input id="contactEmail" name="contactEmail" type="email" placeholder="e.g. info@thebar.com" defaultValue={val('contactEmail')} autoComplete="off" />
+        <Err msg={e.contactEmail} />
+      </fieldset>
+
+      <fieldset>
         <label className="field-label" htmlFor="notes">
           Private notes
         </label>

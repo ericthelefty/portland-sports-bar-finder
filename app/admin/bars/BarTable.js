@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function BarTable({ bars }) {
   const [q, setQ] = useState('');
   const query = q.trim().toLowerCase();
-  const rows = query ? bars.filter((b) => `${b.name} ${b.address} ${b.teams} ${b.city}`.toLowerCase().includes(query)) : bars;
+  const rows = query ? bars.filter((b) => `${b.name} ${b.address} ${b.teams} ${b.city} ${b.email}`.toLowerCase().includes(query)) : bars;
   return (
     <>
       <input
@@ -37,6 +37,7 @@ export default function BarTable({ bars }) {
                   <Link href={`/admin/bars/${b.id}`}>{b.name}</Link>
                   {b.address && <div className="small">{b.address}</div>}
                   {b.teams && <div className="small">Team bar: {b.teams}</div>}
+                  {b.email && <div className="small">✉ {b.email}</div>}
                 </td>
                 <td>{b.city}</td>
                 <td>{b.area || '—'}</td>

@@ -33,6 +33,7 @@ export async function saveBar(_prev, formData) {
     facebook: normalizeUrl(formData.get('facebook')),
     instagram: normalizeUrl(formData.get('instagram')),
     notes: clean(formData.get('notes'), 1000),
+    contactEmail: clean(formData.get('contactEmail'), 200).toLowerCase(),
     active: formData.get('active') === 'yes',
     claimsAll: formData.get('claimsAll') === 'yes',
   };
@@ -46,6 +47,7 @@ export async function saveBar(_prev, formData) {
   const errors = {};
   if (values.name.length < 2) errors.name = 'Enter the bar\'s name.';
   if (!getCity(values.city)) errors.city = 'Choose a city.';
+  if (values.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail)) errors.contactEmail = "That doesn't look like an email address.";
   if (values.area && !areaKeys(values.city).includes(values.area)) errors.area = 'Choose an area in this city.';
   for (const f of ['website', 'facebook', 'instagram']) {
     try {
@@ -63,14 +65,14 @@ export async function saveBar(_prev, formData) {
       const updated = await tx`
         update bars set city = ${values.city}, name = ${values.name}, type = ${values.type}, area = ${values.area}, address = ${values.address},
           website = ${values.website}, facebook = ${values.facebook}, instagram = ${values.instagram},
-          notes = ${values.notes}, active = ${values.active}, claims_all_packages = ${values.claimsAll}
+          notes = ${values.notes}, contact_email = ${values.contactEmail}, active = ${values.active}, claims_all_packages = ${values.claimsAll}
         where id = ${barId} returning id`;
       if (!updated.length) throw new Error('Bar not found');
     } else {
       const [row] = await tx`
-        insert into bars (city, name, type, area, address, website, facebook, instagram, notes, active, claims_all_packages)
+        insert into bars (city, name, type, area, address, website, facebook, instagram, notes, contact_email, active, claims_all_packages)
         values (${values.city}, ${values.name}, ${values.type}, ${values.area}, ${values.address}, ${values.website}, ${values.facebook},
-                ${values.instagram}, ${values.notes}, ${values.active}, ${values.claimsAll})
+                ${values.instagram}, ${values.notes}, ${values.contactEmail}, ${values.active}, ${values.claimsAll})
         returning id`;
       barId = row.id;
     }

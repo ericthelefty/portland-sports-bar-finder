@@ -63,6 +63,7 @@ export default async function ManageBars({ searchParams }) {
           active: b.active,
           hasCount: b.has_count,
           teams: b.teams,
+          email: b.contact_email,
         }))}
       />
     </>
