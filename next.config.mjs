@@ -16,6 +16,8 @@ const nextConfig = {
       { source: '/bars/:id', destination: '/pdx/bars/:id', permanent: true },
       { source: '/report', destination: '/pdx/report', permanent: true },
       { source: '/report/thanks', destination: '/pdx/report/thanks', permanent: true },
+      // The What's new page moved from /changelog to /new.
+      { source: '/changelog', destination: '/new', permanent: true },
     ];
   },
 };

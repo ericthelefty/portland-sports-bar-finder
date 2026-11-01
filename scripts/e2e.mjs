@@ -89,9 +89,11 @@ try {
   check(oldReport.headers().location?.endsWith('/pdx/report?bar=51&has=nfl_redzone'), 'old report links keep their bar and package');
   const badCity = await page.request.get(`${BASE}/sea`);
   check(badCity.status() === 404, 'an unknown city returns 404');
-  await Promise.all([page.waitForURL('**/changelog'), page.click('#changelog-link')]);
+  await Promise.all([page.waitForURL('**/new'), page.click('#changelog-link')]);
   check((await page.locator('#changelog > li').count()) >= 4 && (await page.textContent('h1'))?.includes("What's new"), 'footer link opens the changelog');
   await page.screenshot({ path: `${SHOTS}/changelog.png`, fullPage: true });
+  const oldChangelog = await page.request.get(`${BASE}/changelog`, { maxRedirects: 0 });
+  check(oldChangelog.status() === 308 && oldChangelog.headers().location?.endsWith('/new'), 'the old /changelog address forwards to /new');
   const privacy = await page.request.get(`${BASE}/privacy`);
   check(privacy.status() === 200, 'privacy page still lives at /privacy');
   check((await privacy.text()).includes('PostHog'), 'privacy page explains the analytics');

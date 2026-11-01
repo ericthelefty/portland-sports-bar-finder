@@ -15,7 +15,7 @@
 - **Bar pages** (`/pdx/bars/[id]`): each package's status, where it came from and when it was confirmed, the bar's team tags, and a "Not right?" link.
 - **Report form** (`/pdx/report`): anyone can report packages a bar has or doesn't have, name a team bar, or add a missing bar. No email needed; a Cloudflare Turnstile check blocks bots.
 - **Review page** (`/admin`): password-protected queue to approve or reject reports, and a Manage bars section to add, edit, hide or delete bars and their team tags.
-- **What's new** (`/changelog`): a list of site changes, linked in the footer. Add an entry to `lib/changelog.js` when a change goes live.
+- **What's new** (`/new`): a list of site changes, linked in the footer. Add an entry to `lib/changelog.js` when a change goes live.
 
 Older links (`/bars/12`, `/report`) redirect to their `/pdx` versions. A city's starting bar list (`data/bars.json` for Portland, `data/bars-slc.json` for Salt Lake City) is loaded once, the first time the site runs with that city.
 

@@ -54,7 +54,7 @@ export default function RootLayout({ children }) {
               </a>
             </p>
             <p className="footer-small">
-              <Link href="/changelog" id="changelog-link">
+              <Link href="/new" id="changelog-link">
                 What's new
               </Link>
             </p>
